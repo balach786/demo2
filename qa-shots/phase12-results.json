@@ -1,0 +1,103 @@
+{
+  "name": "PHASE 12 REGRESSION",
+  "pass": 16,
+  "fail": 0,
+  "results": [
+    {
+      "id": "step01",
+      "label": "1. App opens on the dashboard with the DEMO MODE indicator",
+      "status": "PASS",
+      "detail": "DEMO MODE"
+    },
+    {
+      "id": "step02",
+      "label": "2. Dashboard KPIs reconcile with the ledger (cash, bank, sales, profit)",
+      "status": "PASS",
+      "detail": "cash 5804400 bank 11095050 sales 23896700"
+    },
+    {
+      "id": "step03",
+      "label": "3. Accounting module lists the journal",
+      "status": "PASS",
+      "detail": "50 rows on page 1"
+    },
+    {
+      "id": "step04",
+      "label": "4. Payment of PKR 15,000 to ABC Traders is posted with a reference",
+      "status": "PASS",
+      "detail": "Money Paid posted Reference PV-2026-043 · PKR 15,000. Dashboard and ledgers updated."
+    },
+    {
+      "id": "step05",
+      "label": "5. The voucher is searchable, shows PKR 15,000 and is balanced",
+      "status": "PASS",
+      "detail": "PV-2026-043 | TB diff 0"
+    },
+    {
+      "id": "step06",
+      "label": "6. ABC Traders ledger balance fell by exactly PKR 15,000",
+      "status": "PASS",
+      "detail": "before 1762700 → after 1747700"
+    },
+    {
+      "id": "step07",
+      "label": "7. Dashboard bank balance dropped by PKR 15,000",
+      "status": "PASS",
+      "detail": "11095050 → 11080050"
+    },
+    {
+      "id": "step07b",
+      "label": "7b. Dashboard payable dropped by PKR 15,000",
+      "status": "PASS",
+      "detail": "6428400 → 6413400"
+    },
+    {
+      "id": "step08",
+      "label": "8. AI cash-balance answer equals the ledger cash balance",
+      "status": "PASS",
+      "detail": "Business ka cash in hand PKR 5,804,400 hai aur bank accounts mein PKR 11,080,050 majood ha"
+    },
+    {
+      "id": "step09",
+      "label": "9. Sample receipt shows a simulated extraction (confidence + fields)",
+      "status": "PASS",
+      "detail": "Extracted fields Simulated extraction from the bundled sample Confidence 94% Party — select party — "
+    },
+    {
+      "id": "step10",
+      "label": "10. A draft is prepared and routed to Approvals without posting",
+      "status": "PASS",
+      "detail": "413 → 413 entries"
+    },
+    {
+      "id": "step11",
+      "label": "11. Approval posts exactly one voucher with a generated reference",
+      "status": "PASS",
+      "detail": "Approved · posted as RV-2026-045 PKR 185,000 · Ahmed Enterprises balance is now PKR 1,827,100."
+    },
+    {
+      "id": "step12",
+      "label": "12. Dashboard reflects the approved posting",
+      "status": "PASS",
+      "detail": "bank 11080050 → 11265050, cash 5804400 → 5804400"
+    },
+    {
+      "id": "step13",
+      "label": "13. P&L revenue and net profit equal the final ledger",
+      "status": "PASS",
+      "detail": "revenue 23896700/23896700 net 2850100/2850100"
+    },
+    {
+      "id": "step14",
+      "label": "14. Balance sheet equation still holds after the workflow",
+      "status": "PASS",
+      "detail": "A=28067950 L+E=28067950 TBdiff=0"
+    },
+    {
+      "id": "step15",
+      "label": "15. Full navigation sweep clean — no console errors, no blank pages",
+      "status": "PASS",
+      "detail": "0 problems, console=0, page=0"
+    }
+  ]
+}

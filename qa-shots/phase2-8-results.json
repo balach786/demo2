@@ -1,0 +1,175 @@
+{
+  "name": "PHASE 2 + 8",
+  "pass": 28,
+  "fail": 0,
+  "results": [
+    {
+      "id": "startup:/",
+      "label": "Dashboard renders (/)",
+      "status": "PASS",
+      "detail": "title=1 body=4186 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/ai",
+      "label": "AI Command Center renders (/ai)",
+      "status": "PASS",
+      "detail": "title=1 body=2448 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/parties",
+      "label": "Parties renders (/parties)",
+      "status": "PASS",
+      "detail": "title=1 body=1945 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/parties/CUS-001",
+      "label": "Party detail renders (/parties/CUS-001)",
+      "status": "PASS",
+      "detail": "title=1 body=4098 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/chart-of-accounts",
+      "label": "Chart of Accounts renders (/chart-of-accounts)",
+      "status": "PASS",
+      "detail": "title=1 body=3650 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/transactions",
+      "label": "Transactions renders (/transactions)",
+      "status": "PASS",
+      "detail": "title=1 body=6247 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/ledgers",
+      "label": "Ledgers renders (/ledgers)",
+      "status": "PASS",
+      "detail": "title=1 body=18207 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/banks",
+      "label": "Bank Accounts renders (/banks)",
+      "status": "PASS",
+      "detail": "title=1 body=3077 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/income-expenses",
+      "label": "Expenses & Income renders (/income-expenses)",
+      "status": "PASS",
+      "detail": "title=1 body=4733 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/reports",
+      "label": "Financial Reports renders (/reports)",
+      "status": "PASS",
+      "detail": "title=1 body=1641 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/documents",
+      "label": "Documents renders (/documents)",
+      "status": "PASS",
+      "detail": "title=1 body=2451 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/approvals",
+      "label": "Approvals renders (/approvals)",
+      "status": "PASS",
+      "detail": "title=1 body=1962 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:/settings",
+      "label": "Settings renders (/settings)",
+      "status": "PASS",
+      "detail": "title=1 body=3077 errs=0 brokenImgs=0"
+    },
+    {
+      "id": "startup:network",
+      "label": "No failed HTTP responses during route sweep",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "nav:count",
+      "label": "Sidebar exposes 12 working destinations",
+      "status": "PASS",
+      "detail": "12 items"
+    },
+    {
+      "id": "nav:clickthrough",
+      "label": "Every sidebar item navigates to its own page",
+      "status": "PASS",
+      "detail": "12/12"
+    },
+    {
+      "id": "nav:fallback",
+      "label": "Unknown route redirects to dashboard",
+      "status": "PASS",
+      "detail": "/"
+    },
+    {
+      "id": "responsive:desktop-1920",
+      "label": "No horizontal overflow at 1920×1080",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:desktop-1920:sidebar",
+      "label": "Persistent sidebar visible at 1920px",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:laptop-1366",
+      "label": "No horizontal overflow at 1366×768",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:laptop-1366:sidebar",
+      "label": "Persistent sidebar visible at 1366px",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:tablet-768",
+      "label": "No horizontal overflow at 768×1024",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:tablet-768:drawer",
+      "label": "Mobile drawer opens at 768px",
+      "status": "PASS",
+      "detail": "menu=true opened=true"
+    },
+    {
+      "id": "responsive:mobile-390",
+      "label": "No horizontal overflow at 390×844",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "responsive:mobile-390:drawer",
+      "label": "Mobile drawer opens at 390px",
+      "status": "PASS",
+      "detail": "menu=true opened=true"
+    },
+    {
+      "id": "ui:empty-state",
+      "label": "Search with no matches shows an empty state",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "ui:feedback",
+      "label": "AI action produces a visible response bubble",
+      "status": "PASS",
+      "detail": "443 chars"
+    },
+    {
+      "id": "ui:console-health",
+      "label": "No console or page errors during the UI sweep",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

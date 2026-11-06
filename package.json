@@ -1,0 +1,41 @@
+{
+  "name": "ai-business-secretary-demo",
+  "private": true,
+  "version": "1.0.0-demo",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit --pretty false",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "verify:accounting": "tsx scripts/verify-accounting.ts",
+    "verify": "tsx scripts/verify-accounting.ts && tsx scripts/verify-ai.ts",
+    "smoke": "vite build --ssr scripts/smoke-entry.tsx --outDir .smoke && node scripts/smoke.mjs",
+    "qa:browser": "node scripts/qa.mjs",
+    "qa:flows": "node scripts/qa-flows.mjs",
+    "qa:figures": "vite build --ssr scripts/figures-entry.ts --outDir .qa",
+    "qa:audit": "npm run qa:figures && node scripts/qa/audit-ui.mjs && node scripts/qa/audit-financial.mjs && node scripts/qa/audit-ai-docs.mjs",
+    "qa:regression": "npm run qa:figures && node scripts/qa/regression-15.mjs",
+    "qa:storage": "npm run qa:figures && node scripts/qa/audit-storage.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.454.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.48.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

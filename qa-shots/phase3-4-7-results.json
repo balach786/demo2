@@ -1,0 +1,493 @@
+{
+  "name": "PHASE 3+4+7",
+  "pass": 81,
+  "fail": 0,
+  "results": [
+    {
+      "id": "dash:kpi:Total Cash Balance",
+      "label": "KPI \"Total Cash Balance\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=5804400 ledger=5804400"
+    },
+    {
+      "id": "dash:kpi:Total Bank Balance",
+      "label": "KPI \"Total Bank Balance\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=11095050 ledger=11095050"
+    },
+    {
+      "id": "dash:kpi:Total Sales",
+      "label": "KPI \"Total Sales\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=23896700 ledger=23896700"
+    },
+    {
+      "id": "dash:kpi:Total Purchases",
+      "label": "KPI \"Total Purchases\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=16314350 ledger=16314350"
+    },
+    {
+      "id": "dash:kpi:Total Expenses",
+      "label": "KPI \"Total Expenses\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=4493050 ledger=4493050"
+    },
+    {
+      "id": "dash:kpi:Net Profit",
+      "label": "KPI \"Net Profit\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=2850100 ledger=2850100"
+    },
+    {
+      "id": "dash:kpi:Accounts Receivable",
+      "label": "KPI \"Accounts Receivable\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=5823350 ledger=5823350"
+    },
+    {
+      "id": "dash:kpi:Accounts Payable",
+      "label": "KPI \"Accounts Payable\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=6428400 ledger=6428400"
+    },
+    {
+      "id": "dash:kpi:Total Inventory Value",
+      "label": "KPI \"Total Inventory Value\" matches ledger",
+      "status": "PASS",
+      "detail": "UI=2760150 ledger=2760150"
+    },
+    {
+      "id": "dash:period:Today",
+      "label": "Period \"Today\" recomputes sales/purchases/expenses/profit correctly",
+      "status": "PASS",
+      "detail": "sales UI=658500 ledger=658500"
+    },
+    {
+      "id": "dash:period:This Week",
+      "label": "Period \"This Week\" recomputes sales/purchases/expenses/profit correctly",
+      "status": "PASS",
+      "detail": "sales UI=1913000 ledger=1913000"
+    },
+    {
+      "id": "dash:period:This Month",
+      "label": "Period \"This Month\" recomputes sales/purchases/expenses/profit correctly",
+      "status": "PASS",
+      "detail": "sales UI=1913000 ledger=1913000"
+    },
+    {
+      "id": "dash:period:Last Month",
+      "label": "Period \"Last Month\" recomputes sales/purchases/expenses/profit correctly",
+      "status": "PASS",
+      "detail": "sales UI=5539350 ledger=5539350"
+    },
+    {
+      "id": "dash:period:This Year",
+      "label": "Period \"This Year\" recomputes sales/purchases/expenses/profit correctly",
+      "status": "PASS",
+      "detail": "sales UI=23896700 ledger=23896700"
+    },
+    {
+      "id": "dash:recent",
+      "label": "Recent transactions row 1 is the newest voucher in the ledger",
+      "status": "PASS",
+      "detail": "row=\"06 Nov 2026\tEXP-2026-053\tGeneral & administrative — November 2026\tExpense\tPKR 42,800\" ref=EXP-2026-053"
+    },
+    {
+      "id": "dash:top-customers",
+      "label": "Top customers list matches ledger ranking",
+      "status": "PASS",
+      "detail": "expected=XYZ Distributors, Al-Noor Traders, Ahmed Enterprises"
+    },
+    {
+      "id": "dash:AR-reconciles",
+      "label": "Receivable KPI equals sum of customer balances",
+      "status": "PASS",
+      "detail": "UI=5823350 parties=5823350"
+    },
+    {
+      "id": "dash:AP-reconciles",
+      "label": "Payable KPI equals sum of supplier balances",
+      "status": "PASS",
+      "detail": "UI=6428400 parties=6428400"
+    },
+    {
+      "id": "dash:charts",
+      "label": "All four dashboard charts render as SVG",
+      "status": "PASS",
+      "detail": "4 charts"
+    },
+    {
+      "id": "dash:chart-tooltip",
+      "label": "Chart hover shows a tooltip with values",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "parties:count",
+      "label": "Parties list shows every seeded party",
+      "status": "PASS",
+      "detail": "8/8"
+    },
+    {
+      "id": "parties:customers",
+      "label": "Customers tab filters to customers only",
+      "status": "PASS",
+      "detail": "4/4"
+    },
+    {
+      "id": "parties:suppliers",
+      "label": "Suppliers tab filters to suppliers only",
+      "status": "PASS",
+      "detail": "4/4"
+    },
+    {
+      "id": "parties:search",
+      "label": "Party search narrows the list and every hit really contains the term",
+      "status": "PASS",
+      "detail": "2/8 rows"
+    },
+    {
+      "id": "parties:detail-balance",
+      "label": "Party profile shows the ledger closing balance",
+      "status": "PASS",
+      "detail": "expected 1642100 | card=\"Current balance PKR 1,642,100 Receivable\""
+    },
+    {
+      "id": "parties:detail-ledger",
+      "label": "Party profile renders ledger rows",
+      "status": "PASS",
+      "detail": "true"
+    },
+    {
+      "id": "de:baseline",
+      "label": "Baseline ledger is fully balanced before mutations",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:receipt:preview",
+      "label": "Money Received: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:receipt:post",
+      "label": "Money Received: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "bank:10000 ar:-10000 [head=-]"
+    },
+    {
+      "id": "de:receipt",
+      "label": "Double entry intact after Money Received",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:payment:preview",
+      "label": "Money Paid: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:payment:post",
+      "label": "Money Paid: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "bank:-10000 ap:-10000 [head=-]"
+    },
+    {
+      "id": "de:payment",
+      "label": "Double entry intact after Money Paid",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:sales:preview",
+      "label": "Sales Invoice: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:sales:post",
+      "label": "Sales Invoice: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "ar:10000 revenue:10000 inventory:-7000 [head=-]"
+    },
+    {
+      "id": "de:sales",
+      "label": "Double entry intact after Sales Invoice",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:purchase:preview",
+      "label": "Purchase Invoice: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:purchase:post",
+      "label": "Purchase Invoice: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "inventory:10000 ap:10000 [head=-]"
+    },
+    {
+      "id": "de:purchase",
+      "label": "Double entry intact after Purchase Invoice",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:expense:preview",
+      "label": "Expense: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:expense:post",
+      "label": "Expense: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "cash:-10000 transport:10000 [head=5130 — Transport Expense]"
+    },
+    {
+      "id": "de:expense",
+      "label": "Double entry intact after Expense",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:deposit:preview",
+      "label": "Cash Deposit: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:deposit:post",
+      "label": "Cash Deposit: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "cash:-10000 bank:10000 liquid:0 [head=-]"
+    },
+    {
+      "id": "voucher:deposit:internal",
+      "label": "Cash Deposit: total cash + bank unchanged (no money created)",
+      "status": "PASS",
+      "detail": "liquidΔ=0"
+    },
+    {
+      "id": "de:deposit",
+      "label": "Double entry intact after Cash Deposit",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:withdrawal:preview",
+      "label": "Cash Withdrawal: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:withdrawal:post",
+      "label": "Cash Withdrawal: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "cash:10000 bank:-10000 liquid:0 [head=-]"
+    },
+    {
+      "id": "voucher:withdrawal:internal",
+      "label": "Cash Withdrawal: total cash + bank unchanged (no money created)",
+      "status": "PASS",
+      "detail": "liquidΔ=0"
+    },
+    {
+      "id": "de:withdrawal",
+      "label": "Double entry intact after Cash Withdrawal",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:transfer:preview",
+      "label": "Bank Transfer: live journal preview is balanced",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:transfer:post",
+      "label": "Bank Transfer: posts and moves the correct accounts",
+      "status": "PASS",
+      "detail": "hbl:-10000 meezan:10000 liquid:0 [head=-]"
+    },
+    {
+      "id": "voucher:transfer:internal",
+      "label": "Bank Transfer: total cash + bank unchanged (no money created)",
+      "status": "PASS",
+      "detail": "liquidΔ=0"
+    },
+    {
+      "id": "de:transfer",
+      "label": "Double entry intact after Bank Transfer",
+      "status": "PASS",
+      "detail": "unbalanced=0 tbDiff=0 bsDiff=0"
+    },
+    {
+      "id": "voucher:validation:empty",
+      "label": "Post is blocked with no amount / no party",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:validation:zero",
+      "label": "Post is blocked for a zero amount",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:validation:valid",
+      "label": "Post becomes available once the form is valid",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:cancel",
+      "label": "Cancelling the form closes it and posts nothing",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "voucher:cancel:no-impact",
+      "label": "Cancelled voucher did not change the ledger",
+      "status": "PASS",
+      "detail": "420 → 420"
+    },
+    {
+      "id": "report:pl:revenue",
+      "label": "P&L total revenue equals ledger revenue",
+      "status": "PASS",
+      "detail": "UI=23896700 ledger=23896700"
+    },
+    {
+      "id": "report:pl:net",
+      "label": "P&L net profit equals ledger net profit",
+      "status": "PASS",
+      "detail": "UI=2850100 ledger=2850100"
+    },
+    {
+      "id": "report:tb:totals",
+      "label": "Trial balance debits = credits in the UI",
+      "status": "PASS",
+      "detail": "108539000 vs 108539000"
+    },
+    {
+      "id": "report:tb:ledger-match",
+      "label": "Trial balance totals equal the ledger totals",
+      "status": "PASS",
+      "detail": "108539000 vs 108539000"
+    },
+    {
+      "id": "report:bs:equation",
+      "label": "Balance sheet satisfies Assets = Liabilities + Equity",
+      "status": "PASS",
+      "detail": "A=28082950 L+E=28082950 ledgerA=28082950"
+    },
+    {
+      "id": "report:cf:reconcile",
+      "label": "Cash flow opening + movement = closing",
+      "status": "PASS",
+      "detail": "open=14299050 close=16899450 ledgerOpen=14299050 ledgerClose=16899450"
+    },
+    {
+      "id": "report:party-ledger",
+      "label": "Party ledger report renders entries",
+      "status": "PASS",
+      "detail": "8 rows"
+    },
+    {
+      "id": "report:account-ledger",
+      "label": "Account ledger report renders entries",
+      "status": "PASS",
+      "detail": "44 rows"
+    },
+    {
+      "id": "report:print",
+      "label": "Print / PDF triggers the browser print dialog hook",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "report:export",
+      "label": "Export CSV produces a downloadable file",
+      "status": "PASS",
+      "detail": "account-ledger-2026-07-01-to-2026-11-06.csv"
+    },
+    {
+      "id": "approval:queue",
+      "label": "Approval queue lists the seeded items",
+      "status": "PASS",
+      "detail": "5 rows"
+    },
+    {
+      "id": "approval:draft-created",
+      "label": "AI command creates an action preview (not a posting)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "approval:draft-not-posted",
+      "label": "Draft does not change the ledger before approval",
+      "status": "PASS",
+      "detail": "412 → 412"
+    },
+    {
+      "id": "approval:posts",
+      "label": "Approving posts exactly one voucher",
+      "status": "PASS",
+      "detail": "412 → 413"
+    },
+    {
+      "id": "approval:balance",
+      "label": "Payment reduced cash by exactly the approved amount",
+      "status": "PASS",
+      "detail": "5804400 → 5779400"
+    },
+    {
+      "id": "approval:reference",
+      "label": "Approval toast shows the generated voucher reference",
+      "status": "PASS",
+      "detail": "Approved · posted as PV-2026-043 APR-2026-0145 approved. ABC Traders balance moves to PKR 1,737,700."
+    },
+    {
+      "id": "approval:idempotent-double-click",
+      "label": "Double-clicking Approve creates only one voucher",
+      "status": "PASS",
+      "detail": "413 → 414"
+    },
+    {
+      "id": "approval:no-double-approve",
+      "label": "After approval the item can no longer be approved again",
+      "status": "PASS",
+      "detail": "modalOpen=0 approveBtn=0"
+    },
+    {
+      "id": "approval:reject-no-posting",
+      "label": "Rejected draft does not affect balances",
+      "status": "PASS",
+      "detail": "414 → 414"
+    },
+    {
+      "id": "approval:reject-status",
+      "label": "Rejected item shows the Rejected status",
+      "status": "PASS",
+      "detail": "2"
+    },
+    {
+      "id": "approval:edit",
+      "label": "Edit draft saves the new amount and returns to pending",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "phase4:console",
+      "label": "No console/page errors during financial testing",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

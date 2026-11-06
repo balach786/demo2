@@ -1,0 +1,307 @@
+{
+  "name": "PHASE 5+6+9",
+  "pass": 50,
+  "fail": 0,
+  "results": [
+    {
+      "id": "ai:finance.sales",
+      "label": "\"Aaj ki total sales kitni hain?\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=finance.sales invented=none uiNums=3"
+    },
+    {
+      "id": "ai:finance.expenses",
+      "label": "\"Aaj ke total expenses batao.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=finance.expenses invented=none uiNums=4"
+    },
+    {
+      "id": "ai:party.ledger",
+      "label": "\"Ahmed ka ledger dikhao.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=party.ledger invented=none uiNums=18"
+    },
+    {
+      "id": "ai:finance.profit",
+      "label": "\"Is month ka profit calculate karo.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=finance.profit invented=none uiNums=7"
+    },
+    {
+      "id": "ai:finance.cash",
+      "label": "\"Business ka current cash balance batao.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=finance.cash invented=none uiNums=5"
+    },
+    {
+      "id": "ai:party.payable",
+      "label": "\"Ali Traders ko kitni payment deni hai?\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=party.payable invented=none uiNums=3"
+    },
+    {
+      "id": "ai:accounting.transactions",
+      "label": "\"Show me the last 10 transactions.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=accounting.transactions invented=none uiNums=10"
+    },
+    {
+      "id": "ai:action.payment.draft",
+      "label": "\"Prepare a payment of Rs. 25,000 to ABC Traders.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=action.payment.draft invented=none uiNums=2"
+    },
+    {
+      "id": "ai:finance.monthly_trend",
+      "label": "\"Show monthly revenue and expenses.\" → correct intent + figures",
+      "status": "PASS",
+      "detail": "intent=finance.monthly_trend invented=none uiNums=17"
+    },
+    {
+      "id": "ai:no-postings",
+      "label": "Questions never post to the ledger",
+      "status": "PASS",
+      "detail": "412 → 412"
+    },
+    {
+      "id": "ai:drafts-pending",
+      "label": "Financial command created a pending draft (not a posting)",
+      "status": "PASS",
+      "detail": "1 new approval(s)"
+    },
+    {
+      "id": "ai:empty",
+      "label": "Empty message is blocked and adds no message",
+      "status": "PASS",
+      "detail": "disabled=true msgs 1→1"
+    },
+    {
+      "id": "ai:whitespace",
+      "label": "Whitespace-only message is blocked",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "ai:unknown",
+      "label": "Unknown command gets a helpful guidance response (no invented figures)",
+      "status": "PASS",
+      "detail": "I could not match that command to a module. I can help with:\n\n• Sales, profit and expense questions\n\n• Any party ledger "
+    },
+    {
+      "id": "ai:missing-party",
+      "label": "Missing party triggers a clarification question",
+      "status": "PASS",
+      "detail": "I can prepare the payment, but I need to know the party. Try: \"Record a payment of Rs. 25,000 to ABC Traders.\""
+    },
+    {
+      "id": "ai:missing-amount",
+      "label": "Missing amount triggers a clarification question",
+      "status": "PASS",
+      "detail": "ABC Traders currently has an outstanding balance of PKR 1,762,700. What amount should I prepare?\n\nOUTSTANDING\n"
+    },
+    {
+      "id": "ai:zero-amount",
+      "label": "Zero amount does not create a draft",
+      "status": "PASS",
+      "detail": "ABC Traders currently has an outstanding balance of PKR 1,762,700. What amount should I prepare?\n\nOUTSTANDING\n"
+    },
+    {
+      "id": "ai:negative-amount",
+      "label": "Negative amount is not blindly accepted as a positive payment",
+      "status": "PASS",
+      "detail": "approvals=6 latest=25000"
+    },
+    {
+      "id": "ai:unknown-party",
+      "label": "Unknown party does not create a draft or fabricate a ledger",
+      "status": "PASS",
+      "detail": "I could not match that command to a module. I can help with:\n\n• Sales, profit and expense questions\n"
+    },
+    {
+      "id": "ai:repeat",
+      "label": "Repeated command returns the same deterministic answer",
+      "status": "PASS",
+      "detail": "Business ka cash in hand PKR 5,804,400 hai aur bank accounts vs Business ka cash in hand PKR 5,804,400 hai aur bank accounts"
+    },
+    {
+      "id": "ai:xss",
+      "label": "Script payload is treated as text (no dialog, no execution)",
+      "status": "PASS",
+      "detail": "dialog=false"
+    },
+    {
+      "id": "ai:xss-text",
+      "label": "Script payload is not injected as HTML",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "id": "ai:history",
+      "label": "Conversation history records commands",
+      "status": "PASS",
+      "detail": "20 entries"
+    },
+    {
+      "id": "ai:suggested",
+      "label": "Suggested prompt chip runs a real command",
+      "status": "PASS",
+      "detail": "278 chars"
+    },
+    {
+      "id": "doc:library",
+      "label": "Document library lists the 3 bundled samples",
+      "status": "PASS",
+      "detail": "3"
+    },
+    {
+      "id": "doc:png",
+      "label": "PNG upload accepted with feedback",
+      "status": "PASS",
+      "detail": "Document added OCR is not connected in this demo, so no fields were read. Enter the values"
+    },
+    {
+      "id": "doc:jpg",
+      "label": "JPG upload accepted with feedback",
+      "status": "PASS",
+      "detail": "Document added OCR is not connected in this demo, so no fields were read. Enter the values"
+    },
+    {
+      "id": "doc:pdf",
+      "label": "PDF upload accepted with feedback",
+      "status": "PASS",
+      "detail": "Document added OCR is not connected in this demo, so no fields were read. Enter the values"
+    },
+    {
+      "id": "doc:unsupported",
+      "label": "Unsupported file type is rejected with an error toast",
+      "status": "PASS",
+      "detail": "Unsupported file type Upload a PDF or an image (PNG/JPG)."
+    },
+    {
+      "id": "doc:empty",
+      "label": "Zero-byte file is rejected with an explanation",
+      "status": "PASS",
+      "detail": "Empty file That file is 0 bytes — pick a real PDF or image."
+    },
+    {
+      "id": "doc:empty-nocrash",
+      "label": "Zero-byte file does not crash the app",
+      "status": "PASS",
+      "detail": "Empty file That file is 0 bytes — pick a real PDF or image."
+    },
+    {
+      "id": "doc:large",
+      "label": "Large 6MB file uploads without crashing",
+      "status": "PASS",
+      "detail": "Document added OCR is not connected in this demo, so no fields were read. Enter "
+    },
+    {
+      "id": "doc:duplicate",
+      "label": "Duplicate upload is handled and flagged",
+      "status": "PASS",
+      "detail": "Document added · duplicate name A document with this name is already in the library — this is a sepa"
+    },
+    {
+      "id": "doc:duplicate-nocrash",
+      "label": "Duplicate upload does not crash",
+      "status": "PASS",
+      "detail": "Document added · duplicate name A document with this name is already in the libr"
+    },
+    {
+      "id": "doc:count",
+      "label": "Uploaded documents appear in the library",
+      "status": "PASS",
+      "detail": "3 → 8"
+    },
+    {
+      "id": "doc:no-invention",
+      "label": "User uploads show NO invented extraction values",
+      "status": "PASS",
+      "detail": "amount=\"\" party=\"\""
+    },
+    {
+      "id": "doc:guard",
+      "label": "Draft creation blocked until an amount is entered",
+      "status": "PASS",
+      "detail": "Empty file\nThat file is 0 bytes — pick a real PDF or image. Document added\nOCR i"
+    },
+    {
+      "id": "doc:draft-route",
+      "label": "Draft creation routes to Approvals",
+      "status": "PASS",
+      "detail": "/approvals"
+    },
+    {
+      "id": "doc:draft-no-post",
+      "label": "Document draft is NOT posted automatically",
+      "status": "PASS",
+      "detail": "412 → 412"
+    },
+    {
+      "id": "doc:draft-pending",
+      "label": "Document draft is pending approval",
+      "status": "PASS",
+      "detail": "3 pending"
+    },
+    {
+      "id": "doc:sample-extraction",
+      "label": "Bundled sample shows an extraction with a confidence score",
+      "status": "PASS",
+      "detail": "Extracted fields Simulated extraction from the bundled sample Confidence 94% Party — select party — Ahmed Ente"
+    },
+    {
+      "id": "doc:simulated-label",
+      "label": "Extraction is explicitly labelled as simulated",
+      "status": "PASS",
+      "detail": "label present"
+    },
+    {
+      "id": "sec:no-external-calls",
+      "label": "Session makes no external network requests",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "sec:no-secrets-dom",
+      "label": "No credentials or connection strings in the rendered DOM",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "sec:storage-scope",
+      "label": "localStorage holds only the isolated demo key",
+      "status": "PASS",
+      "detail": "absa.demo.state.v1"
+    },
+    {
+      "id": "sec:demo-badge",
+      "label": "DEMO MODE indicator is visible on the main screen",
+      "status": "PASS",
+      "detail": "DEMO MODE"
+    },
+    {
+      "id": "sec:fictional-data",
+      "label": "Dataset is fictional demo data (ABC Trading Company, no real PII)",
+      "status": "PASS",
+      "detail": "ABC Trading Company"
+    },
+    {
+      "id": "sec:approval-gate",
+      "label": "AI commands cannot post to the ledger without approval",
+      "status": "PASS",
+      "detail": "412 → 412"
+    },
+    {
+      "id": "sec:bundle-scan",
+      "label": "Built JS bundle contains no API keys or DB connection strings",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "sec:console",
+      "label": "No console/page errors during AI, document and security tests",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

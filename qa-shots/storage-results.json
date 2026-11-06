@@ -1,0 +1,157 @@
+{
+  "name": "STORAGE / PERSISTENCE",
+  "pass": 25,
+  "fail": 0,
+  "results": [
+    {
+      "id": "S1",
+      "label": "First load writes exactly one key, the designated demo key",
+      "status": "PASS",
+      "detail": "absa.demo.state.v1"
+    },
+    {
+      "id": "S1b",
+      "label": "Persisted payload is versioned and holds the demo dataset",
+      "status": "PASS",
+      "detail": "v1, 412 entries, ABC Trading Company"
+    },
+    {
+      "id": "S1c",
+      "label": "Payload size is reasonable for localStorage",
+      "status": "PASS",
+      "detail": "150 KB"
+    },
+    {
+      "id": "S2",
+      "label": "Unrelated app keys planted for the isolation test",
+      "status": "PASS",
+      "detail": "absa.demo.other,absa.demo.state.v1,auth.token,theme,unrelated.app.data"
+    },
+    {
+      "id": "S3",
+      "label": "Posting a voucher updates the persisted state immediately",
+      "status": "PASS",
+      "detail": "412 → 413"
+    },
+    {
+      "id": "S4",
+      "label": "The record survives a full page refresh",
+      "status": "PASS",
+      "detail": "entries=413 ref=PV-2026-043"
+    },
+    {
+      "id": "S4b",
+      "label": "Dashboard figures after refresh match the persisted ledger",
+      "status": "PASS",
+      "detail": "UI=\"Total Cash Balance PKR 5,804,400 as at 06 Nov 2026 View\" ledger=5804400"
+    },
+    {
+      "id": "S5",
+      "label": "A second tab sees the same persisted records",
+      "status": "PASS",
+      "detail": "413 entries"
+    },
+    {
+      "id": "S6",
+      "label": "Reset opens a confirmation dialog instead of acting immediately",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "S6b",
+      "label": "Cancelling the reset leaves all demo data intact",
+      "status": "PASS",
+      "detail": "413 entries"
+    },
+    {
+      "id": "S7",
+      "label": "Confirmed reset restores the seeded dataset",
+      "status": "PASS",
+      "detail": "412 entries"
+    },
+    {
+      "id": "S7b",
+      "label": "Dashboard returns to the seeded figure after reset",
+      "status": "PASS",
+      "detail": "Total Cash Balance PKR 5,804,400 as at 06 Nov 2026 View"
+    },
+    {
+      "id": "S8",
+      "label": "Reset only affects the designated demo key — unrelated keys survive untouched",
+      "status": "PASS",
+      "detail": "keys=absa.demo.other,absa.demo.state.v1,auth.token,theme,unrelated.app.data"
+    },
+    {
+      "id": "S8b",
+      "label": "The app creates no storage keys beyond its own designated key",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "id": "S9",
+      "label": "After reset + refresh the demo is still on the seed (nothing resurrects)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "S10",
+      "label": "Corrupt saved data does not white-screen the app",
+      "status": "PASS",
+      "detail": "titles=1 errors=0"
+    },
+    {
+      "id": "S10b",
+      "label": "Corrupt saved data is replaced by a clean seeded dataset",
+      "status": "PASS",
+      "detail": "153621 chars rewritten"
+    },
+    {
+      "id": "S11",
+      "label": "An unknown schema version is rejected and the seed is rebuilt",
+      "status": "PASS",
+      "detail": "412 entries"
+    },
+    {
+      "id": "S12",
+      "label": "A payload that does not describe this demo business is not adopted",
+      "status": "PASS",
+      "detail": "412 entries, \"ABC Trading Company\""
+    },
+    {
+      "id": "S13",
+      "label": "Approval decisions survive a refresh (not just transactions)",
+      "status": "PASS",
+      "detail": "completed 1 → 2, entries 413"
+    },
+    {
+      "id": "S13b",
+      "label": "No console/page errors during the whole storage run",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "id": "S13c",
+      "label": "A saved upload whose preview URL expired shows a clear fallback (no broken image)",
+      "status": "PASS",
+      "detail": "fallback shown"
+    },
+    {
+      "id": "S14",
+      "label": "The demo stores nothing in cookies or sessionStorage",
+      "status": "PASS",
+      "detail": "cookies=0 session=0"
+    },
+    {
+      "id": "S15",
+      "label": "App still boots and renders when localStorage throws",
+      "status": "PASS",
+      "detail": "titles=1 errors=0"
+    },
+    {
+      "id": "S15b",
+      "label": "UI honestly reports that nothing is being persisted",
+      "status": "PASS",
+      "detail": "shows \"In memory only\""
+    }
+  ]
+}
