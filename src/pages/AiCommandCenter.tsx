@@ -91,6 +91,7 @@ export default function AiCommandCenter() {
   });
 
   const recControllerRef = useRef<VoiceRecognitionController | null>(null);
+  const interimTextRef = useRef('');
 
   const pending = useMemo(() => data.approvals.filter((a) => a.status === 'pending' || a.status === 'draft'), [data.approvals]);
 
@@ -126,12 +127,27 @@ export default function AiCommandCenter() {
     const controller = new VoiceRecognitionController(
       {
         onStateChange: (st) => setRecState(st),
-        onInterimText: (txt) => setInterimText(txt),
+        onInterimText: (txt) => {
+          interimTextRef.current = txt;
+          setInterimText(txt);
+        },
         onFinalText: (txt) => {
           setInput((prev) => (prev ? `${prev} ${txt}`.trim() : txt.trim()));
+          interimTextRef.current = '';
           setInterimText('');
         },
-        onError: (err) => setRecError(err),
+        onError: (err) => {
+          setRecError(err);
+          // Preserve any partially captured spoken words into text input so work is not lost
+          if (interimTextRef.current) {
+            const captured = interimTextRef.current;
+            setInput((prev) => (prev ? `${prev} ${captured}`.trim() : captured.trim()));
+            interimTextRef.current = '';
+            setInterimText('');
+          }
+          // Seamless fallback: automatically focus text input
+          setTimeout(() => textareaRef.current?.focus(), 60);
+        },
         onVolumeChange: (vol) => setVolume(vol),
       },
       speechLang
@@ -171,6 +187,7 @@ export default function AiCommandCenter() {
       if (text) {
         setInput((prev) => (prev ? `${prev} ${text}`.trim() : text.trim()));
       }
+      interimTextRef.current = '';
       setInterimText('');
       setTimeout(() => textareaRef.current?.focus(), 50);
     } else {
@@ -179,7 +196,9 @@ export default function AiCommandCenter() {
           type: 'not-supported',
           message: 'Web Speech API is not available in this browser.',
           remedy: 'Use Google Chrome, Microsoft Edge, or pick a suggested prompt below to test voice workflow.',
+          isRetryable: false,
         });
+        setTimeout(() => textareaRef.current?.focus(), 50);
         return;
       }
       const started = await recControllerRef.current?.start(speechLang);
@@ -194,14 +213,39 @@ export default function AiCommandCenter() {
     if (text) {
       setInput((prev) => (prev ? `${prev} ${text}`.trim() : text.trim()));
     }
+    interimTextRef.current = '';
     setInterimText('');
     setTimeout(() => textareaRef.current?.focus(), 50);
   };
 
   const handleVoiceCancel = () => {
     recControllerRef.current?.cancel();
+    interimTextRef.current = '';
     setInterimText('');
     setRecError(null);
+  };
+
+  const handleVoiceRetry = async () => {
+    setRecError(null);
+    if (!isSpeechRecognitionSupported()) {
+      setRecError({
+        type: 'not-supported',
+        message: 'Web Speech API is not available in this browser.',
+        remedy: 'Use Google Chrome, Microsoft Edge, or type your question below.',
+        isRetryable: false,
+      });
+      setTimeout(() => textareaRef.current?.focus(), 50);
+      return;
+    }
+    await recControllerRef.current?.start(speechLang);
+  };
+
+  const handleTypeInstead = () => {
+    recControllerRef.current?.cancel();
+    interimTextRef.current = '';
+    setInterimText('');
+    setRecError(null);
+    textareaRef.current?.focus();
   };
 
   const send = async (raw: string) => {
@@ -389,6 +433,8 @@ export default function AiCommandCenter() {
                 recControllerRef.current?.setLanguage(lang);
               }}
               error={recError}
+              onRetry={handleVoiceRetry}
+              onTypeInstead={handleTypeInstead}
             />
 
             <div className="chips mb-2">
@@ -414,9 +460,13 @@ export default function AiCommandCenter() {
               </button>
               <textarea
                 ref={textareaRef}
-                className="chat-input"
+                className={`chat-input ${recError ? 'input-fallback-hint' : ''}`}
                 rows={1}
-                placeholder='Type or speak a command… e.g. "Aaj ki total sales kitni hain?"'
+                placeholder={
+                  recError
+                    ? 'Voice unavailable — type your question here…'
+                    : 'Type or speak a command… e.g. "Aaj ki total sales kitni hain?"'
+                }
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {

@@ -12,12 +12,15 @@ export type VoiceRecognitionState =
   | 'unsupported';
 
 export type VoiceRecognitionErrorType =
-  | 'permission-denied'
-  | 'no-speech'
   | 'network'
+  | 'permission-denied'
+  | 'service-not-allowed'
   | 'audio-capture'
-  | 'not-supported'
+  | 'no-speech'
   | 'aborted'
+  | 'not-supported'
+  | 'language-not-supported'
+  | 'timeout'
   | 'unknown';
 
 export type SpeechLanguage = 'ur-PK' | 'en-US' | 'en-PK';
@@ -26,6 +29,7 @@ export interface VoiceRecognitionError {
   type: VoiceRecognitionErrorType;
   message: string;
   remedy?: string;
+  isRetryable?: boolean;
 }
 
 export type VoiceSynthesisState = 'idle' | 'speaking' | 'paused' | 'stopped';

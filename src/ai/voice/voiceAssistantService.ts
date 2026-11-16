@@ -178,6 +178,7 @@ export class VoiceAssistantService {
             type: err.type,
             message: err.message,
             remedy: err.remedy,
+            isRetryable: err.isRetryable,
           });
           this.setStatus('error');
         },
@@ -323,3 +324,4 @@ export class VoiceAssistantService {
 
 // Global Singleton Instance
 export const voiceAssistantService = new VoiceAssistantService();
+

@@ -70,16 +70,20 @@ export type VoiceAssistantStatus =
 
 export interface VoiceAssistantError {
   type:
-    | 'permission-denied'
-    | 'no-speech'
     | 'network'
+    | 'permission-denied'
+    | 'service-not-allowed'
     | 'audio-capture'
-    | 'not-supported'
+    | 'no-speech'
     | 'aborted'
+    | 'not-supported'
+    | 'language-not-supported'
+    | 'timeout'
     | 'provider-unconfigured'
     | 'unknown';
   message: string;
   remedy?: string;
+  isRetryable?: boolean;
 }
 
 export interface ToolExecutionContext {
@@ -95,3 +99,4 @@ export interface BusinessToolDefinition<TParams = any, TResult = any> {
   module: 'accounting' | 'trade' | 'forex' | 'inventory' | 'general';
   execute: (params: TParams, context: ToolExecutionContext) => Promise<TResult> | TResult;
 }
+

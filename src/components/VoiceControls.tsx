@@ -13,6 +13,8 @@ import {
   Settings2,
   Sparkles,
   Info,
+  RotateCcw,
+  Keyboard,
 } from 'lucide-react';
 import type { SpeechLanguage, VoiceRecognitionError, VoiceRecognitionState } from '../voice/types';
 import { VoiceRecognitionController, isSpeechRecognitionSupported } from '../voice/speechRecognition';
@@ -44,7 +46,7 @@ export function VoiceWaveform({ active = true, volume = 0.5 }: { active?: boolea
 }
 
 /* ------------------------------------------------------------------ */
-/* Voice Listening Bar (Appears above input during recording)          */
+/* Voice Listening Bar (Appears above input during recording/error)   */
 /* ------------------------------------------------------------------ */
 interface VoiceListeningBarProps {
   state: VoiceRecognitionState;
@@ -55,6 +57,8 @@ interface VoiceListeningBarProps {
   onCancel: () => void;
   onLanguageChange: (lang: SpeechLanguage) => void;
   error?: VoiceRecognitionError | null;
+  onRetry?: () => void;
+  onTypeInstead?: () => void;
 }
 
 export function VoiceListeningBar({
@@ -66,15 +70,19 @@ export function VoiceListeningBar({
   onCancel,
   onLanguageChange,
   error,
+  onRetry,
+  onTypeInstead,
 }: VoiceListeningBarProps) {
   if (state === 'idle' && !error) return null;
+
+  const isRetryable = error?.isRetryable !== false;
 
   return (
     <div className={`voice-listening-bar ${error ? 'error' : ''}`}>
       <div className="vlb-left">
         {error ? (
           <div className="vlb-error-icon">
-            <AlertCircle size={16} color="var(--red)" />
+            <AlertCircle size={18} color="var(--red)" />
           </div>
         ) : (
           <div className="vlb-wave-box">
@@ -88,6 +96,12 @@ export function VoiceListeningBar({
             <div className="vlb-error-text">
               <span className="bold">{error.message}</span>
               {error.remedy ? <span className="vlb-sub">{error.remedy}</span> : null}
+              {interimText && (
+                <div style={{ marginTop: 4, fontSize: '11.5px', color: 'var(--text-2)' }}>
+                  <span className="muted">Preserved speech: </span>
+                  <span className="vlb-preview-quote">"{interimText}"</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="vlb-speech-text">
@@ -107,30 +121,67 @@ export function VoiceListeningBar({
       </div>
 
       <div className="vlb-actions">
-        {!error && (
-          <div className="vlb-lang-picker">
-            <select
-              value={language}
-              onChange={(e) => onLanguageChange(e.target.value as SpeechLanguage)}
-              className="vlb-select"
-              title="Speech Recognition Language"
+        {error ? (
+          <>
+            {isRetryable && onRetry && (
+              <button
+                type="button"
+                className="btn primary sm vlb-btn-retry"
+                onClick={onRetry}
+                title="Retry voice recognition"
+                style={{ display: 'flex', alignItems: 'center', gap: 5 }}
+              >
+                <RotateCcw size={13} />
+                <span>Retry Voice</span>
+              </button>
+            )}
+            {onTypeInstead && (
+              <button
+                type="button"
+                className="btn sm vlb-btn-type"
+                onClick={onTypeInstead}
+                title="Focus chat input to type your question"
+                style={{ display: 'flex', alignItems: 'center', gap: 5 }}
+              >
+                <Keyboard size={13} />
+                <span>Type Instead</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn xs vlb-btn-cancel"
+              onClick={onCancel}
+              title="Dismiss error message"
             >
-              <option value="ur-PK">Urdu (Pakistan)</option>
-              <option value="en-US">English / Roman Urdu</option>
-              <option value="en-PK">English (Pakistan)</option>
-            </select>
-          </div>
-        )}
+              <X size={14} />
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="vlb-lang-picker">
+              <select
+                value={language}
+                onChange={(e) => onLanguageChange(e.target.value as SpeechLanguage)}
+                className="vlb-select"
+                title="Speech Recognition Language"
+              >
+                <option value="ur-PK">Urdu (Pakistan)</option>
+                <option value="en-US">English / Roman Urdu</option>
+                <option value="en-PK">English (Pakistan)</option>
+              </select>
+            </div>
 
-        {!error && state === 'listening' && (
-          <button className="btn success sm vlb-btn-done" onClick={onDone} title="Stop and insert text">
-            <Check size={14} /> Done
-          </button>
-        )}
+            {state === 'listening' && (
+              <button className="btn success sm vlb-btn-done" onClick={onDone} title="Stop and insert text">
+                <Check size={14} /> Done
+              </button>
+            )}
 
-        <button className="btn xs vlb-btn-cancel" onClick={onCancel} title="Cancel voice input">
-          <X size={14} />
-        </button>
+            <button className="btn xs vlb-btn-cancel" onClick={onCancel} title="Cancel voice input">
+              <X size={14} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

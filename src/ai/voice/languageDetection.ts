@@ -120,3 +120,4 @@ export function getLanguageDisplayLabel(lang: DetectedLanguage | LanguagePrefere
       return 'Auto';
   }
 }
+

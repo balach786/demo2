@@ -771,6 +771,34 @@ td.desc { min-width: 200px; }
   gap: 8px;
   flex: 0 0 auto;
 }
+.vlb-btn-retry {
+  background: var(--blue-600);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.vlb-btn-retry:hover {
+  background: var(--blue-700);
+}
+.vlb-btn-type {
+  background: #ffffff;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.vlb-btn-type:hover {
+  background: #f8fafc;
+}
+.chat-input.input-fallback-hint {
+  border-color: #fca5a5;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+}
 .vlb-select {
   padding: 4px 8px;
   border-radius: 6px;
