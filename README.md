@@ -4,10 +4,11 @@
 
 A premium, fully interactive demonstration of an AI business secretary + accounting platform:
 
-- **Executive dashboard** — 9 KPIs and 4 charts, all derived from one ledger.
+- **Executive dashboard** — 13 KPIs (including Trade Valuation, Landed Imports, Exports, Forex P&L) and 4 charts, all derived from one ledger.
 - **Accounting** — parties, chart of accounts, 8 voucher types, ledgers, bank accounts, six financial reports.
-- **AI Secretary** — natural-language commands in **English and Roman Urdu** that answer from the ledger and prepare
-  approval-gated transaction drafts.
+- **Trade & Logistics** — Commercial imports with landed cost calculations, commercial exports with dispatch validation, multi-warehouse inventory matrix across 4 regional hubs, and in-transit stock transfers.
+- **Multi-Currency Exchange Desk** — USD, AED, and IRR (ISO 4217, 0 decimals, distinguished from Toman) trading registers with Weighted Average Cost (WAC) recalibration and realized P&L recognition.
+- **AI Secretary & Voice Command** — natural-language voice and text commands in **English, Roman Urdu, and Urdu script** with browser microphone input, audio playback narration, and approval-gated transaction drafts.
 - **Document intelligence** — upload a slip/invoice, review extracted fields, create a draft (extraction is clearly
   labelled as simulated).
 - **Approvals** — draft → pending → approved → completed / rejected, with posting into the isolated demo ledger.
@@ -39,9 +40,14 @@ npm run preview    # http://localhost:5173
 | `npm run dev` | Dev server (0.0.0.0, HMR disabled for presentation stability) |
 | `npm run build` | Typecheck + production build to `dist/` |
 | `npm run typecheck` | TypeScript, no emit |
-| `npm run verify` | 72 accounting + AI/builder assertions |
-| `npm run smoke` | Server-render smoke test of all 13 routes |
-| `npm run qa:browser` | Real-browser QA + screenshots into `qa-shots/` (requires Chromium; set `CHROME_PATH`) |
+| `npm run verify` | Full verification: accounting + AI + voice + trade/forex (112 assertions) |
+| `npm run verify:accounting` | Double-entry, trial balance, balance sheet, liquidity checks |
+| `npm run verify:voice` | Voice engine, speech recognition, speech synthesis verification |
+| `npm run verify:trade` | Landed cost, stock transfer reservation, WAC math, IRR zero decimals |
+| `npm run qa:trade` | Playwright real-browser E2E suite across all trade & forex screens (30 checks) |
+| `npm run qa:voice` | Playwright real-browser E2E suite for voice input & audio playback |
+| `npm run smoke` | Server-render smoke test of all routes |
+| `npm run qa:browser` | Real-browser QA + screenshots into `qa-shots/` |
 | `npm run qa:flows` | End-to-end workflows: document → draft → approve/post, reject, edit, reset |
 
 ## Demo walkthrough (12 minutes)
@@ -61,10 +67,18 @@ Full script, Q&A and recovery plan: **[CLIENT_DEMO_GUIDE.md](./CLIENT_DEMO_GUIDE
 
 | File | Contents |
 |---|---|
-| `PROJECT_DEMO_AUDIT.md` | Inspection report: what was found before building (and what was not), strategy, safety compliance |
-| `DEMO_IMPLEMENTATION_REPORT.md` | What was built/reused/changed, what works vs is simulated vs planned, test evidence, limitations |
+| `IMPORT_EXPORT_IMPLEMENTATION_REPORT.md` | Commercial imports/exports, landed cost formulas, warehouse stock guardrails |
+| `CURRENCY_EXCHANGE_IMPLEMENTATION_REPORT.md` | Multi-currency desk (USD, AED, IRR), WAC formulas, realized P&L, 0-decimal IRR rules |
+| `ACCOUNTING_INTEGRATION_REPORT.md` | Proof of baseline 412 entries, Trial Balance (DR=CR 108.5M), Balance Sheet balance |
+| `DEMO_DATA_RECONCILIATION_REPORT.md` | Exhaustive reconciliation of 4 warehouses, 6 SKUs (122.4M), and foreign currency balances |
+| `IMPORT_EXPORT_CURRENCY_QA_REPORT.md` | End-to-end browser QA report across all trade & currency workflows |
+| `VOICE_COMMAND_IMPLEMENTATION_REPORT.md` | Voice input (STT), voice output (TTS), Urdu/Roman Urdu, and playback controls |
+| `CLIENT_DEMO_WALKTHROUGH.md` | Step-by-step 15-minute presentation script across all modules |
 | `CLIENT_DEMO_GUIDE.md` | Scene-by-scene presentation playbook, commands, Q&A, recovery |
-| `qa-shots/` | Screenshots from the browser QA run |
+| `PROJECT_DEMO_AUDIT.md` | Initial baseline inspection report |
+| `DEMO_IMPLEMENTATION_REPORT.md` | Baseline features implementation report |
+| `qa-shots-trade/` | Playwright browser QA screenshots for Trade & Multi-Currency modules |
+| `qa-shots/` | Baseline and voice QA browser screenshots |
 
 ## Architecture (short version)
 
