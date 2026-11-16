@@ -20,6 +20,9 @@ import {
 } from '../voice/speechRecognition';
 import { voiceSynthesizer } from '../voice/speechSynthesis';
 import type { SpeechLanguage, VoiceRecognitionError, VoiceRecognitionState } from '../voice/types';
+import { voiceAssistantService } from '../ai/voice/voiceAssistantService';
+import { VoiceSettingsModal } from '../components/VoiceSettingsModal';
+import type { VoiceAssistantSettings } from '../ai/voice/voiceTypes';
 
 interface ChatMessage {
   id: string;
@@ -78,13 +81,13 @@ export default function AiCommandCenter() {
   const [interimText, setInterimText] = useState('');
   const [volume, setVolume] = useState(0.3);
   const [recError, setRecError] = useState<VoiceRecognitionError | null>(null);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState<VoiceAssistantSettings>(() =>
+    voiceAssistantService.getSettings()
+  );
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [autoPlayVoice, setAutoPlayVoice] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      return localStorage.getItem('ai_secretary_voice_auto_play') === 'true';
-    } catch {
-      return false;
-    }
+    return voiceAssistantService.getSettings().autoPlayVoice;
   });
 
   const recControllerRef = useRef<VoiceRecognitionController | null>(null);
@@ -95,6 +98,28 @@ export default function AiCommandCenter() {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, typing, data.approvals.length]);
+
+  // Track whether TTS is actively speaking
+  useEffect(() => {
+    return voiceSynthesizer.subscribe((state) => {
+      setIsSpeaking(state === 'speaking');
+    });
+  }, []);
+
+  // Compute active multi-turn context slots text for display
+  const activeContextText = useMemo(() => {
+    const turns = voiceAssistantService.getTurns();
+    if (turns.length === 0) return undefined;
+    const last = turns[turns.length - 1];
+    const slots = last?.contextSlotsAfterTurn;
+    if (!slots) return undefined;
+    const parts: string[] = [];
+    if (slots.activeCurrency) parts.push(`FX: ${slots.activeCurrency}`);
+    if (slots.activeWarehouseName) parts.push(slots.activeWarehouseName.replace(/\s*\(.*\)/, ''));
+    if (slots.activePartyName) parts.push(slots.activePartyName.split(' ')[0]);
+    if (slots.activePeriod?.label) parts.push(slots.activePeriod.label);
+    return parts.length > 0 ? parts.join(' · ') : undefined;
+  }, [messages]);
 
   // Initialize Speech Recognition Controller
   useEffect(() => {
@@ -122,9 +147,21 @@ export default function AiCommandCenter() {
 
   const handleAutoPlayToggle = (val: boolean) => {
     setAutoPlayVoice(val);
-    try {
-      localStorage.setItem('ai_secretary_voice_auto_play', val ? 'true' : 'false');
-    } catch {}
+    voiceAssistantService.saveSettings({ autoPlayVoice: val });
+  };
+
+  const handleUpdateSettings = (updated: Partial<VoiceAssistantSettings>) => {
+    voiceAssistantService.saveSettings(updated);
+    const newSettings = voiceAssistantService.getSettings();
+    setVoiceSettings(newSettings);
+    setAutoPlayVoice(newSettings.autoPlayVoice);
+    setSpeechLang(newSettings.speechRecognitionLang);
+  };
+
+  const handleClearChat = () => {
+    setMessages(INITIAL);
+    setHistory([]);
+    voiceAssistantService.clearConversation();
   };
 
   const toggleListening = async () => {
@@ -167,7 +204,7 @@ export default function AiCommandCenter() {
     setRecError(null);
   };
 
-  const send = (raw: string) => {
+  const send = async (raw: string) => {
     const text = raw.trim();
     if (!text || typing) return;
     const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', text };
@@ -175,59 +212,56 @@ export default function AiCommandCenter() {
     setInput('');
     setTyping(true);
 
-    window.setTimeout(() => {
-      const result = runAiCommand(text, data);
-      let approvalId: string | undefined;
-      if (result.draft) {
+    try {
+      const { result, turn } = await voiceAssistantService.processQuery(text, data, (draftPayload) => {
         const approval = createApproval({
-          title: result.draft.title,
-          subtitle: result.draft.subtitle,
+          title: draftPayload.title,
+          subtitle: draftPayload.subtitle,
           origin: 'ai',
-          draft: result.draft.draft,
+          draft: draftPayload.draft,
           command: text,
-          confidence: result.draft.confidence,
-          uncertainties: result.draft.uncertainties,
+          confidence: draftPayload.confidence,
+          uncertainties: draftPayload.uncertainties,
         });
-        approvalId = approval.id;
         addActivity({
           at: new Date().toISOString(),
           actor: 'ai',
           tone: 'warning',
           title: 'AI prepared a transaction draft',
-          detail: `${formatPKR(result.draft.draft.amount)} · awaiting approval`,
+          detail: `${formatPKR(draftPayload.draft.amount)} · awaiting approval`,
         });
         pushToast({
           title: 'Draft created — approval required',
-          text: `${result.draft.title}. Reference ${approval.reference}.`,
+          text: `${draftPayload.title}. Reference ${approval.reference}.`,
           tone: 'info',
         });
-      }
+        return approval.id;
+      });
 
       const aiMsgId = `a-${Date.now()}`;
       setMessages((prev) => [
         ...prev,
-        { id: aiMsgId, role: 'ai', text: result.text, result, approvalId },
+        { id: aiMsgId, role: 'ai', text: result.text, result, approvalId: turn.approvalId },
       ]);
       setHistory((prev) => [{ q: text, at: new Date().toISOString(), intent: result.intentLabel }, ...prev].slice(0, 8));
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `err-${Date.now()}`, role: 'ai', text: `Error processing request: ${err.message || 'Unknown error'}` },
+      ]);
+    } finally {
       setTyping(false);
-
-      // Auto-read response aloud if voice response is enabled
-      if (autoPlayVoice) {
-        voiceSynthesizer.speak(aiMsgId, result.text, {
-          preferredLanguage: result.language === 'roman-urdu' ? 'ur' : 'en',
-        });
-      }
-    }, 520);
+    }
   };
 
   return (
     <Page
       title="Command Center"
-      subtitle="Natural-language business commands in English and Roman Urdu, answered from the same demo ledger used by the accounting module."
+      subtitle="Natural-language conversational business assistant in English, Roman Urdu, and Urdu, answered from the same demo ledger used by the accounting module."
       actions={
         <>
           <span className="badge amber"><span className="dot" /> Simulated assistant</span>
-          <button className="btn" onClick={() => { setMessages(INITIAL); setHistory([]); }}>
+          <button className="btn" onClick={handleClearChat}>
             <Trash2 size={14} /> Clear chat
           </button>
         </>
@@ -252,7 +286,12 @@ export default function AiCommandCenter() {
             onLanguageChange={(lang) => {
               setSpeechLang(lang);
               recControllerRef.current?.setLanguage(lang);
+              voiceAssistantService.saveSettings({ speechRecognitionLang: lang });
             }}
+            onOpenSettings={() => setSettingsModalOpen(true)}
+            isSpeaking={isSpeaking}
+            onStopSpeaking={() => voiceAssistantService.stopSpeaking()}
+            activeContextText={activeContextText}
           />
 
           <div className="chat-scroll" ref={scrollRef}>
@@ -473,6 +512,14 @@ export default function AiCommandCenter() {
           </InfoCallout>
         </aside>
       </div>
+
+      <VoiceSettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        settings={voiceSettings}
+        onUpdateSettings={handleUpdateSettings}
+        onClearHistory={handleClearChat}
+      />
     </Page>
   );
 }

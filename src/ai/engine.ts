@@ -633,6 +633,33 @@ export function runAiCommand(input: string, ds: DemoDataset): AiResult {
     };
   }
 
+  /* ---------------- foreign currency: Realized Exchange P&L ---------------- */
+  if (
+    ((/\b(forex|currency|exchange|tabadla)\b/.test(t) || /(فاریکس|کرنسی|تبادلہ)/.test(t)) && (/\b(profit|gain|loss|pnl|munafa|kamai|nafa)\b/.test(t) || /(منافع|نفع|آمدن)/.test(t))) ||
+    ((/\b(usd|dollar|aed|dirham|irr|rial)\b/.test(t)) && (/\b(profit|gain|loss|pnl|munafa|kamai|nafa)\b/.test(t) || /(منافع|نفع|آمدن)/.test(t)))
+  ) {
+    const balances = computeFxBalances(ds.fxTransactions ?? []);
+    let totalRealized = 0;
+    for (const b of Object.values(balances)) {
+      totalRealized += b.totalRealizedProfitLossPKR;
+    }
+    const isProfit = totalRealized >= 0;
+    return {
+      intent: 'forex.profit', intentLabel: 'Forex · Realized Gain/Loss', module: 'Currency Reports',
+      language,
+      text: ur
+        ? `Foreign currency trading se ab tak ka realized net profit **${formatPKR(totalRealized)}** hai. Ye Weighted Average Cost (WAC) formula ke mutabiq sales par calculate kiya gaya hai.`
+        : `Cumulative realized currency exchange ${isProfit ? 'profit' : 'loss'} is **${formatPKR(totalRealized)}**, calculated strictly using the Weighted Average Cost (WAC) method on currency disposals.`,
+      metrics: [
+        { label: 'Realized Forex Gain/Loss', value: `${isProfit ? '+' : ''}${formatPKR(totalRealized)}` },
+        { label: 'USD Realized P&L', value: formatPKR(balances.USD.totalRealizedProfitLossPKR) },
+        { label: 'AED Realized P&L', value: formatPKR(balances.AED.totalRealizedProfitLossPKR) },
+        { label: 'IRR Realized P&L', value: formatPKR(balances.IRR.totalRealizedProfitLossPKR) },
+      ],
+      links: [{ label: 'Currency Reports', to: '/currency-reports' }, { label: 'Forex Desk', to: '/currency-exchange' }],
+    };
+  }
+
   /* ---------------- foreign currency: USD ---------------- */
   if (/\b(usd|dollar|dollars|ڈالر)\b/.test(t) && (/\b(balance|kitna|available|rate|cost|paas|holdings?)\b/.test(t) || /(بیلنس|کتنا|کتنے|موجود|ریٹ)/.test(t))) {
     const balances = computeFxBalances(ds.fxTransactions ?? []);
@@ -691,30 +718,6 @@ export function runAiCommand(input: string, ds: DemoDataset): AiResult {
         { label: 'Total PKR Basis', value: formatPKR(irr.totalPKRInvested) },
       ],
       links: [{ label: 'Forex Desk', to: '/currency-exchange' }, { label: 'Currency Reports', to: '/currency-reports' }],
-    };
-  }
-
-  /* ---------------- foreign currency: Realized Exchange P&L ---------------- */
-  if ((/\b(forex|currency|exchange|tabadla)\b/.test(t) || /(فاریکس|کرنسی|تبادلہ)/.test(t)) && (/\b(profit|gain|loss|pnl|munafa|kamai)\b/.test(t) || /(منافع|نفع|آمدن)/.test(t))) {
-    const balances = computeFxBalances(ds.fxTransactions ?? []);
-    let totalRealized = 0;
-    for (const b of Object.values(balances)) {
-      totalRealized += b.totalRealizedProfitLossPKR;
-    }
-    const isProfit = totalRealized >= 0;
-    return {
-      intent: 'forex.profit', intentLabel: 'Forex · Realized Gain/Loss', module: 'Currency Reports',
-      language,
-      text: ur
-        ? `Foreign currency trading se ab tak ka realized net profit **${formatPKR(totalRealized)}** hai. Ye Weighted Average Cost (WAC) formula ke mutabiq sales par calculate kiya gaya hai.`
-        : `Cumulative realized currency exchange ${isProfit ? 'profit' : 'loss'} is **${formatPKR(totalRealized)}**, calculated strictly using the Weighted Average Cost (WAC) method on currency disposals.`,
-      metrics: [
-        { label: 'Realized Forex Gain/Loss', value: `${isProfit ? '+' : ''}${formatPKR(totalRealized)}` },
-        { label: 'USD Realized P&L', value: formatPKR(balances.USD.totalRealizedProfitLossPKR) },
-        { label: 'AED Realized P&L', value: formatPKR(balances.AED.totalRealizedProfitLossPKR) },
-        { label: 'IRR Realized P&L', value: formatPKR(balances.IRR.totalRealizedProfitLossPKR) },
-      ],
-      links: [{ label: 'Currency Reports', to: '/currency-reports' }, { label: 'Forex Desk', to: '/currency-exchange' }],
     };
   }
 

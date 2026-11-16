@@ -236,6 +236,10 @@ interface VoiceHeaderControlsProps {
   onAutoPlayToggle: (val: boolean) => void;
   language: SpeechLanguage;
   onLanguageChange: (lang: SpeechLanguage) => void;
+  onOpenSettings?: () => void;
+  isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
+  activeContextText?: string;
 }
 
 export function VoiceHeaderControls({
@@ -243,6 +247,10 @@ export function VoiceHeaderControls({
   onAutoPlayToggle,
   language,
   onLanguageChange,
+  onOpenSettings,
+  isSpeaking = false,
+  onStopSpeaking,
+  activeContextText,
 }: VoiceHeaderControlsProps) {
   const recognitionSupported = isSpeechRecognitionSupported();
   const synthSupported = isSpeechSynthesisSupported();
@@ -250,45 +258,81 @@ export function VoiceHeaderControls({
 
   return (
     <div className="voice-header-bar">
-      <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
-        {/* Auto Read Toggle */}
-        <label className="voice-auto-toggle" title="Automatically read aloud answers to voice commands">
-          <input
-            type="checkbox"
-            checked={autoPlay}
-            onChange={(e) => onAutoPlayToggle(e.target.checked)}
-          />
-          <Volume2 size={13} />
-          <span>Auto-read answers</span>
-        </label>
+      <div className="row wrap" style={{ gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
+          {/* Auto Read Toggle */}
+          <label className="voice-auto-toggle" title="Automatically read aloud answers to voice commands">
+            <input
+              type="checkbox"
+              checked={autoPlay}
+              onChange={(e) => onAutoPlayToggle(e.target.checked)}
+            />
+            <Volume2 size={13} />
+            <span>Auto-read</span>
+          </label>
 
-        {/* Speech Language Selector */}
-        <div className="voice-lang-chip">
-          <span className="xsmall muted">Mic Lang:</span>
-          <select
-            value={language}
-            onChange={(e) => onLanguageChange(e.target.value as SpeechLanguage)}
-            className="voice-lang-select"
-            title="Speech recognition recognition model"
-          >
-            <option value="ur-PK">Urdu (اردو / ur-PK)</option>
-            <option value="en-US">English / Roman Urdu</option>
-            <option value="en-PK">English (Pakistan)</option>
-          </select>
+          {/* Speech Language Selector */}
+          <div className="voice-lang-chip">
+            <span className="xsmall muted">Mic Lang:</span>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as SpeechLanguage)}
+              className="voice-lang-select"
+              title="Speech recognition recognition model"
+            >
+              <option value="ur-PK">Urdu (اردو / ur-PK)</option>
+              <option value="en-US">English / Roman Urdu</option>
+              <option value="en-PK">English (Pakistan)</option>
+            </select>
+          </div>
+
+          {/* Active Speaking Indicator */}
+          {isSpeaking && (
+            <button
+              className="badge teal sm"
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, border: 'none' }}
+              onClick={onStopSpeaking}
+              title="Click to stop speaking response"
+            >
+              <Square size={10} />
+              <span>Speaking aloud · Stop</span>
+              <VoiceWaveform active={true} volume={0.6} />
+            </button>
+          )}
+
+          {/* Active Multi-Turn Context Chip */}
+          {activeContextText && (
+            <span className="badge blue sm" title="Active conversation context carried over to follow-up questions">
+              <Sparkles size={11} /> Context: {activeContextText}
+            </span>
+          )}
         </div>
 
-        {/* Engine status indicator */}
-        <span
-          className={`badge ${recognitionSupported ? 'teal' : 'amber'}`}
-          title={
-            recognitionSupported
-              ? `Web Speech API ready · Voice: ${voiceInfo.name}${voiceInfo.isFallback ? ' (system fallback)' : ' (native Urdu)'}`
-              : 'Web Speech API not natively available in this browser. Simulated voice input mode enabled.'
-          }
-        >
-          <span className="dot" />
-          {recognitionSupported ? 'Voice Ready' : 'Voice Sim Mode'}
-        </span>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          {onOpenSettings && (
+            <button
+              className="btn xs"
+              onClick={onOpenSettings}
+              title="Open Voice & Language Settings"
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <Settings2 size={13} /> Settings
+            </button>
+          )}
+
+          {/* Engine status indicator */}
+          <span
+            className={`badge ${recognitionSupported ? 'teal' : 'amber'}`}
+            title={
+              recognitionSupported
+                ? `Web Speech API ready · Voice: ${voiceInfo.name}${voiceInfo.isFallback ? ' (system fallback)' : ' (native Urdu)'}`
+                : 'Web Speech API not natively available in this browser. Simulated voice input mode enabled.'
+            }
+          >
+            <span className="dot" />
+            {recognitionSupported ? 'Voice Ready' : 'Voice Sim Mode'}
+          </span>
+        </div>
       </div>
     </div>
   );
