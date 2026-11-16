@@ -14,6 +14,12 @@ import Reports from './pages/Reports';
 import Documents from './pages/Documents';
 import Approvals from './pages/Approvals';
 import Settings from './pages/Settings';
+import Imports from './pages/Imports';
+import Exports from './pages/Exports';
+import Inventory from './pages/Inventory';
+import StockTransfers from './pages/StockTransfers';
+import CurrencyExchange from './pages/CurrencyExchange';
+import CurrencyReports from './pages/CurrencyReports';
 
 export default function App() {
   return (
@@ -28,6 +34,12 @@ export default function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/ledgers" element={<Ledgers />} />
           <Route path="/banks" element={<BankAccounts />} />
+          <Route path="/imports" element={<Imports />} />
+          <Route path="/exports" element={<Exports />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/stock-transfers" element={<StockTransfers />} />
+          <Route path="/currency-exchange" element={<CurrencyExchange />} />
+          <Route path="/currency-reports" element={<CurrencyReports />} />
           <Route path="/income-expenses" element={<IncomeExpenses />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/documents" element={<Documents />} />

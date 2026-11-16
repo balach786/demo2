@@ -19,6 +19,14 @@ import type {
   Party,
   TransactionType,
 } from './types';
+import {
+  DEMO_WAREHOUSES,
+  DEMO_PRODUCTS,
+  DEMO_STOCK_TRANSFERS,
+  DEMO_IMPORTS,
+  DEMO_EXPORTS,
+  DEMO_FX_TRANSACTIONS,
+} from './tradeSeed';
 
 export const DEMO_TODAY = '2026-11-06';
 export const FISCAL_YEAR_START = '2025-07-01';
@@ -638,6 +646,12 @@ export function buildDemoDataset(): DemoDataset {
     documents,
     approvals,
     activities,
+    warehouses: DEMO_WAREHOUSES,
+    inventory: DEMO_PRODUCTS,
+    stockTransfers: DEMO_STOCK_TRANSFERS,
+    imports: DEMO_IMPORTS,
+    exports: DEMO_EXPORTS,
+    fxTransactions: DEMO_FX_TRANSACTIONS,
   };
 }
 

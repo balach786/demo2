@@ -24,8 +24,17 @@ import type {
   DraftTransaction,
   JournalEntry,
   TransactionType,
+  ImportShipment,
+  ImportStatus,
+  ExportShipment,
+  ExportStatus,
+  StockTransfer,
+  TransferStatus,
+  FxTransaction,
+  InventoryProduct,
 } from './types';
 import { DEMO_STORAGE_KEY, buildDemoDataset } from './seed';
+import { computeFxBalances } from './tradeLogic';
 
 const TYPE_PREFIX: Record<TransactionType, string> = {
   opening: 'OPS',
@@ -80,6 +89,16 @@ interface StoreValue {
   pendingCount: number;
   isPersisted: boolean;
   clearPersistence: () => void;
+
+  /* Trade & Currency operations */
+  addImport: (shipment: Omit<ImportShipment, 'id' | 'reference' | 'simulated'>) => ImportShipment;
+  updateImportStatus: (id: string, status: ImportStatus, receivedQty?: number) => void;
+  addExport: (shipment: Omit<ExportShipment, 'id' | 'reference' | 'simulated'>) => ExportShipment;
+  updateExportStatus: (id: string, status: ExportStatus) => void;
+  addStockTransfer: (transfer: Omit<StockTransfer, 'id' | 'reference' | 'simulated' | 'initiatedAt'>) => StockTransfer;
+  receiveStockTransfer: (id: string) => void;
+  addFxTransaction: (tx: Omit<FxTransaction, 'id' | 'reference' | 'simulated'>) => FxTransaction;
+  updateInventoryStock: (productId: string, warehouseId: string, available: number, reserved?: number) => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -93,7 +112,18 @@ function loadInitial(): DemoDataset {
     if (parsed.version !== 1 || !parsed.data?.entries) return fresh;
     // Guard: only accept a dataset that still describes the demo business.
     if (parsed.data.business?.name !== fresh.business.name) return fresh;
-    return parsed.data;
+
+    // Ensure all trade & FX collections are populated even if loaded from older localStorage
+    return {
+      ...fresh,
+      ...parsed.data,
+      warehouses: parsed.data.warehouses?.length ? parsed.data.warehouses : fresh.warehouses,
+      inventory: parsed.data.inventory?.length ? parsed.data.inventory : fresh.inventory,
+      stockTransfers: parsed.data.stockTransfers?.length ? parsed.data.stockTransfers : fresh.stockTransfers,
+      imports: parsed.data.imports?.length ? parsed.data.imports : fresh.imports,
+      exports: parsed.data.exports?.length ? parsed.data.exports : fresh.exports,
+      fxTransactions: parsed.data.fxTransactions?.length ? parsed.data.fxTransactions : fresh.fxTransactions,
+    };
   } catch {
     return fresh;
   }
@@ -299,6 +329,291 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /* ---------------- Trade & Currency Operations ---------------- */
+  const addImport = useCallback<StoreValue['addImport']>((input) => {
+    let created: ImportShipment;
+    setData((prev) => {
+      const num = prev.imports.length + 1;
+      const reference = `IMP-2026-${String(num).padStart(3, '0')}`;
+      created = {
+        ...input,
+        id: `IMP-${Date.now()}`,
+        reference,
+        simulated: true,
+      };
+
+      let updatedInventory = prev.inventory;
+      if (input.status === 'received' && input.quantity > 0) {
+        updatedInventory = prev.inventory.map((p) => {
+          if (p.id !== input.productId) return p;
+          const locs = { ...p.locations };
+          const loc = locs[input.receivingLocationId] || { available: 0, reserved: 0 };
+          locs[input.receivingLocationId] = {
+            ...loc,
+            available: loc.available + input.quantity,
+          };
+          return { ...p, locations: locs };
+        });
+      }
+
+      return {
+        ...prev,
+        imports: [created, ...prev.imports],
+        inventory: updatedInventory,
+      };
+    });
+    return created!;
+  }, []);
+
+  const updateImportStatus = useCallback<StoreValue['updateImportStatus']>((id, status, receivedQty) => {
+    setData((prev) => {
+      const existing = prev.imports.find((i) => i.id === id);
+      if (!existing) return prev;
+
+      const qtyToAdd = receivedQty !== undefined ? receivedQty : (status === 'received' && existing.status !== 'received' ? existing.quantity : 0);
+
+      let updatedInventory = prev.inventory;
+      if (qtyToAdd > 0) {
+        updatedInventory = prev.inventory.map((p) => {
+          if (p.id !== existing.productId) return p;
+          const locs = { ...p.locations };
+          const loc = locs[existing.receivingLocationId] || { available: 0, reserved: 0 };
+          locs[existing.receivingLocationId] = {
+            ...loc,
+            available: loc.available + qtyToAdd,
+          };
+          return { ...p, locations: locs };
+        });
+      }
+
+      return {
+        ...prev,
+        inventory: updatedInventory,
+        imports: prev.imports.map((i) =>
+          i.id === id
+            ? {
+                ...i,
+                status,
+                receivedQuantity: status === 'received' ? i.quantity : (receivedQty ?? i.receivedQuantity),
+              }
+            : i
+        ),
+      };
+    });
+  }, []);
+
+  const addExport = useCallback<StoreValue['addExport']>((input) => {
+    let created: ExportShipment;
+    setData((prev) => {
+      const num = prev.exports.length + 1;
+      const reference = `EXP-2026-${String(num).padStart(3, '0')}`;
+      created = {
+        ...input,
+        id: `EXP-${Date.now()}`,
+        reference,
+        simulated: true,
+      };
+
+      let updatedInventory = prev.inventory;
+      if (input.status === 'confirmed' || input.status === 'ready_for_dispatch') {
+        updatedInventory = prev.inventory.map((p) => {
+          if (p.id !== input.productId) return p;
+          const locs = { ...p.locations };
+          const loc = locs[input.dispatchLocationId] || { available: 0, reserved: 0 };
+          locs[input.dispatchLocationId] = {
+            available: Math.max(0, loc.available - input.quantity),
+            reserved: loc.reserved + input.quantity,
+          };
+          return { ...p, locations: locs };
+        });
+      } else if (input.status === 'dispatched' || input.status === 'delivered') {
+        updatedInventory = prev.inventory.map((p) => {
+          if (p.id !== input.productId) return p;
+          const locs = { ...p.locations };
+          const loc = locs[input.dispatchLocationId] || { available: 0, reserved: 0 };
+          locs[input.dispatchLocationId] = {
+            ...loc,
+            available: Math.max(0, loc.available - input.quantity),
+          };
+          return { ...p, locations: locs };
+        });
+      }
+
+      return {
+        ...prev,
+        exports: [created, ...prev.exports],
+        inventory: updatedInventory,
+      };
+    });
+    return created!;
+  }, []);
+
+  const updateExportStatus = useCallback<StoreValue['updateExportStatus']>((id, status) => {
+    setData((prev) => {
+      const existing = prev.exports.find((e) => e.id === id);
+      if (!existing || existing.status === status) return prev;
+
+      let updatedInventory = prev.inventory;
+      const pId = existing.productId;
+      const wId = existing.dispatchLocationId;
+      const qty = existing.quantity;
+
+      updatedInventory = prev.inventory.map((p) => {
+        if (p.id !== pId) return p;
+        const locs = { ...p.locations };
+        const loc = locs[wId] || { available: 0, reserved: 0 };
+
+        if (existing.status === 'draft' && (status === 'confirmed' || status === 'ready_for_dispatch')) {
+          locs[wId] = {
+            available: Math.max(0, loc.available - qty),
+            reserved: loc.reserved + qty,
+          };
+        } else if ((existing.status === 'confirmed' || existing.status === 'ready_for_dispatch') && (status === 'dispatched' || status === 'delivered')) {
+          locs[wId] = {
+            ...loc,
+            reserved: Math.max(0, loc.reserved - qty),
+          };
+        } else if (existing.status === 'draft' && (status === 'dispatched' || status === 'delivered')) {
+          locs[wId] = {
+            ...loc,
+            available: Math.max(0, loc.available - qty),
+          };
+        } else if ((existing.status === 'confirmed' || existing.status === 'ready_for_dispatch') && status === 'cancelled') {
+          locs[wId] = {
+            available: loc.available + qty,
+            reserved: Math.max(0, loc.reserved - qty),
+          };
+        }
+
+        return { ...p, locations: locs };
+      });
+
+      return {
+        ...prev,
+        inventory: updatedInventory,
+        exports: prev.exports.map((e) => (e.id === id ? { ...e, status } : e)),
+      };
+    });
+  }, []);
+
+  const addStockTransfer = useCallback<StoreValue['addStockTransfer']>((input) => {
+    let created: StockTransfer;
+    setData((prev) => {
+      const num = prev.stockTransfers.length + 1;
+      const reference = `TRF-WH-${String(num).padStart(3, '0')}`;
+      created = {
+        ...input,
+        id: `ST-${Date.now()}`,
+        reference,
+        initiatedAt: new Date().toISOString(),
+        simulated: true,
+      };
+
+      let updatedInventory = prev.inventory;
+      if (input.status === 'in_transit') {
+        updatedInventory = prev.inventory.map((p) => {
+          if (p.id !== input.productId) return p;
+          const locs = { ...p.locations };
+          const src = locs[input.sourceLocationId] || { available: 0, reserved: 0 };
+          locs[input.sourceLocationId] = {
+            available: Math.max(0, src.available - input.quantity),
+            reserved: src.reserved + input.quantity,
+          };
+          return { ...p, locations: locs };
+        });
+      }
+
+      return {
+        ...prev,
+        stockTransfers: [created, ...prev.stockTransfers],
+        inventory: updatedInventory,
+      };
+    });
+    return created!;
+  }, []);
+
+  const receiveStockTransfer = useCallback<StoreValue['receiveStockTransfer']>((id) => {
+    setData((prev) => {
+      const transfer = prev.stockTransfers.find((t) => t.id === id);
+      if (!transfer || transfer.status !== 'in_transit') return prev;
+
+      const pId = transfer.productId;
+      const srcId = transfer.sourceLocationId;
+      const dstId = transfer.destinationLocationId;
+      const qty = transfer.quantity;
+
+      const updatedInventory = prev.inventory.map((p) => {
+        if (p.id !== pId) return p;
+        const locs = { ...p.locations };
+        const src = locs[srcId] || { available: 0, reserved: 0 };
+        const dst = locs[dstId] || { available: 0, reserved: 0 };
+
+        locs[srcId] = {
+          ...src,
+          reserved: Math.max(0, src.reserved - qty),
+        };
+        locs[dstId] = {
+          ...dst,
+          available: dst.available + qty,
+        };
+        return { ...p, locations: locs };
+      });
+
+      return {
+        ...prev,
+        inventory: updatedInventory,
+        stockTransfers: prev.stockTransfers.map((t) =>
+          t.id === id ? { ...t, status: 'received', receivedAt: new Date().toISOString() } : t
+        ),
+      };
+    });
+  }, []);
+
+  const addFxTransaction = useCallback<StoreValue['addFxTransaction']>((input) => {
+    let created: FxTransaction;
+    setData((prev) => {
+      const num = prev.fxTransactions.length + 1;
+      const reference = `FX-${input.type.toUpperCase()}-${input.currency}-${String(num).padStart(2, '0')}`;
+
+      let costBasisPKR = input.costBasisPKR;
+      let realizedGainLossPKR = input.realizedGainLossPKR;
+      if (input.type === 'sale') {
+        const balances = computeFxBalances(prev.fxTransactions);
+        const curSummary = balances[input.currency];
+        const avgRate = curSummary?.weightedAvgCostRate || input.exchangeRate;
+        costBasisPKR = input.foreignAmount * avgRate;
+        realizedGainLossPKR = input.totalPKR - costBasisPKR;
+      }
+
+      created = {
+        ...input,
+        id: `FX-${Date.now()}`,
+        reference,
+        costBasisPKR,
+        realizedGainLossPKR,
+        simulated: true,
+      };
+
+      return {
+        ...prev,
+        fxTransactions: [created, ...prev.fxTransactions],
+      };
+    });
+    return created!;
+  }, []);
+
+  const updateInventoryStock = useCallback<StoreValue['updateInventoryStock']>((productId, warehouseId, available, reserved = 0) => {
+    setData((prev) => ({
+      ...prev,
+      inventory: prev.inventory.map((p) => {
+        if (p.id !== productId) return p;
+        const locs = { ...p.locations };
+        locs[warehouseId] = { available, reserved };
+        return { ...p, locations: locs };
+      }),
+    }));
+  }, []);
+
   const pendingCount = useMemo(
     () => data.approvals.filter((a) => a.status === 'pending' || a.status === 'draft').length,
     [data.approvals],
@@ -323,11 +638,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pendingCount,
       isPersisted,
       clearPersistence,
+      addImport,
+      updateImportStatus,
+      addExport,
+      updateExportStatus,
+      addStockTransfer,
+      receiveStockTransfer,
+      addFxTransaction,
+      updateInventoryStock,
     }),
     [
       data, toasts, pushToast, dismissToast, postEntry, createApproval, updateApprovalDraft,
       setApprovalStatus, approve, reject, addDocument, updateDocument, addActivity, resetDemo,
-      pendingCount, isPersisted, clearPersistence,
+      pendingCount, isPersisted, clearPersistence, addImport, updateImportStatus, addExport,
+      updateExportStatus, addStockTransfer, receiveStockTransfer, addFxTransaction, updateInventoryStock,
     ],
   );
 

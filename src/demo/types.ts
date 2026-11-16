@@ -148,6 +148,17 @@ export interface Activity {
   tone: 'info' | 'success' | 'warning' | 'danger';
 }
 
+import type {
+  WarehouseLocation,
+  InventoryProduct,
+  StockTransfer,
+  ImportShipment,
+  ExportShipment,
+  FxTransaction,
+} from './tradeTypes';
+
+export * from './tradeTypes';
+
 export interface DemoDataset {
   /** Fixed demo clock so a live presentation is always deterministic. */
   demoToday: string;
@@ -170,4 +181,10 @@ export interface DemoDataset {
   documents: DemoDocument[];
   approvals: Approval[];
   activities: Activity[];
+  warehouses: WarehouseLocation[];
+  inventory: InventoryProduct[];
+  stockTransfers: StockTransfer[];
+  imports: ImportShipment[];
+  exports: ExportShipment[];
+  fxTransactions: FxTransaction[];
 }

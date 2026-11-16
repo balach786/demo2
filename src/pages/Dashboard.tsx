@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Wallet, Landmark, TrendingUp, ShoppingCart, Receipt, PiggyBank, ArrowDownLeft,
   ArrowUpRight, Boxes, Sparkles, Plus, FileUp, ShieldCheck, ArrowRight, CheckCircle2,
-  Clock3, Activity as ActivityIcon, Users, AlertCircle,
+  Clock3, Activity as ActivityIcon, Users, AlertCircle, Ship, Send, Coins, Globe,
 } from 'lucide-react';
 import { Page, Card, CardHead, Kpi, TypeBadge, Avatar, InfoCallout } from '../components/ui';
 import { LineAreaChart, GroupedBarChart, BarList, Sparkline } from '../components/charts';
@@ -12,6 +12,13 @@ import {
   dashboardSummary, entryAmount, partyBalance, trialBalance, TYPE_LABELS,
 } from '../demo/accounting';
 import { formatCompactPKR, formatDate, formatPKR, formatRelative } from '../lib/format';
+import {
+  calculateTotalInventoryValuation,
+  computeFxBalances,
+  formatFxAmount,
+  formatFxRate,
+} from '../demo/tradeLogic';
+import type { FxCurrency } from '../demo/tradeTypes';
 
 const BLUE = '#2563eb';
 const TEAL = '#0e9f8a';
@@ -80,6 +87,31 @@ export default function Dashboard() {
   );
 
   const inventorySeries = m.map((p) => p.profit);
+
+  const fxBalances = useMemo(() => computeFxBalances(data.fxTransactions), [data.fxTransactions]);
+  const totalTradeValuation = useMemo(() => calculateTotalInventoryValuation(data.inventory), [data.inventory]);
+  const tradeKpis = useMemo(() => {
+    const totalImports = data.imports.reduce((acc, s) => acc + s.totalLandedCostPKR, 0);
+    const totalExports = data.exports.reduce((acc, s) => acc + s.totalSaleAmountPKR, 0);
+    const activeImports = data.imports.filter((s) => s.status === 'in_transit' || s.status === 'ordered').length;
+    const activeExports = data.exports.filter((s) => s.status === 'dispatched' || s.status === 'ready_for_dispatch').length;
+    const inTransitTransfers = data.stockTransfers.filter((t) => t.status === 'in_transit').length;
+    let totalRealizedFxGain = 0;
+    let totalInvestedFx = 0;
+    for (const cur of Object.values(fxBalances)) {
+      totalRealizedFxGain += cur.totalRealizedProfitLossPKR;
+      totalInvestedFx += cur.totalPKRInvested;
+    }
+    return {
+      totalImports,
+      totalExports,
+      activeImports,
+      activeExports,
+      inTransitTransfers,
+      totalRealizedFxGain,
+      totalInvestedFx,
+    };
+  }, [data.imports, data.exports, data.stockTransfers, fxBalances]);
 
   return (
     <Page
@@ -325,6 +357,117 @@ export default function Dashboard() {
             />
           </div>
         </Card>
+      </div>
+
+      {/* Trade & Multi-Currency Overview */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700 }}>Trade Logistics &amp; Foreign Currency Desk</h3>
+            <p style={{ fontSize: 12, color: 'var(--muted)' }}>Multi-warehouse stock valuation, import/export shipments, and Weighted Average Cost foreign currency holdings.</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Link to="/imports" className="btn sm">Imports</Link>
+            <Link to="/exports" className="btn sm">Exports</Link>
+            <Link to="/inventory" className="btn sm">Warehouses</Link>
+            <Link to="/currency-exchange" className="btn sm primary">Forex Desk</Link>
+          </div>
+        </div>
+
+        <div className="grid grid-4" style={{ marginBottom: 14 }}>
+          <Kpi
+            label="Warehouse Stock Valuation"
+            value={formatPKR(totalTradeValuation)}
+            icon={<Boxes size={16} />}
+            tone="teal"
+            hint="Across 4 demonstration warehouses"
+            link={<Link to="/inventory" className="kpi-link">Matrix</Link>}
+          />
+          <Kpi
+            label="Total Landed Imports"
+            value={formatPKR(tradeKpis.totalImports)}
+            icon={<Ship size={16} />}
+            tone="blue"
+            hint={`${tradeKpis.activeImports} shipments active/ordered`}
+            link={<Link to="/imports" className="kpi-link">View</Link>}
+          />
+          <Kpi
+            label="Total Commercial Exports"
+            value={formatPKR(tradeKpis.totalExports)}
+            icon={<Send size={16} />}
+            tone="green"
+            hint={`${tradeKpis.activeExports} active consignments`}
+            link={<Link to="/exports" className="kpi-link">View</Link>}
+          />
+          <Kpi
+            label="Realized Forex Trading Gain"
+            value={formatPKR(tradeKpis.totalRealizedFxGain)}
+            icon={<Coins size={16} />}
+            tone={tradeKpis.totalRealizedFxGain >= 0 ? 'green' : 'red'}
+            hint="Calculated via WAC formula"
+            link={<Link to="/currency-exchange" className="kpi-link">Desk</Link>}
+          />
+        </div>
+
+        <div className="grid grid-2">
+          {/* Forex Holdings Card */}
+          <Card pad>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 680, fontSize: 13.5 }}>Forex Liquid Holdings</div>
+              <span className="badge blue">Weighted Average Cost</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              {(['USD', 'AED', 'IRR'] as FxCurrency[]).map((c) => {
+                const s = fxBalances[c];
+                return (
+                  <div key={c} style={{ background: 'var(--surface-2)', padding: '10px 12px', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="mono strong">{c}</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>{formatFxRate(s.weightedAvgCostRate, c)}</span>
+                    </div>
+                    <div className="mono strong" style={{ fontSize: 15, marginTop: 4 }}>
+                      {formatFxAmount(s.availableBalance, c)}
+                    </div>
+                    <div style={{ fontSize: 11, color: s.totalRealizedProfitLossPKR >= 0 ? 'var(--green)' : 'var(--red)', marginTop: 2 }}>
+                      {s.totalRealizedProfitLossPKR >= 0 ? '+' : ''}{formatPKR(s.totalRealizedProfitLossPKR)} P&amp;L
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Warehouses Card */}
+          <Card pad>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 680, fontSize: 13.5 }}>Demonstration Warehouses</div>
+              <span className="badge outline">{data.warehouses.length} Active Facilities</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+              {data.warehouses.map((w) => {
+                let available = 0;
+                let reserved = 0;
+                for (const p of data.inventory) {
+                  const loc = p.locations[w.id];
+                  if (loc) {
+                    available += loc.available;
+                    reserved += loc.reserved;
+                  }
+                }
+                return (
+                  <div key={w.id} style={{ background: 'var(--surface-2)', padding: '8px 11px', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                    <div style={{ fontWeight: 650, fontSize: 12.5 }}>{w.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>{w.city}, {w.country}</div>
+                    <div style={{ marginTop: 4, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span className="strong amount-pos">{available.toLocaleString()} avail</span>
+                      {reserved > 0 && <span style={{ color: 'var(--amber)' }}>{reserved} rsvd</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
       </div>
 
       {/* tables */}

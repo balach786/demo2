@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Sparkles, Users, ListTree, ArrowLeftRight, BookOpen, Landmark,
   Receipt, FileBarChart, Files, ShieldCheck, Settings as SettingsIcon, Menu, X,
-  RotateCcw, CalendarRange, ChevronRight, Search, Clock,
+  RotateCcw, CalendarRange, ChevronRight, Search, Clock, Ship, Send, Boxes, Coins,
 } from 'lucide-react';
 import { useRange, useStore } from '../demo/store';
 import { formatDate } from '../lib/format';
@@ -19,6 +19,22 @@ const NAV: NavGroup[] = [
     items: [
       { to: '/', label: 'Dashboard', icon: <LayoutDashboard size={17} /> },
       { to: '/ai', label: 'AI Command Center', icon: <Sparkles size={17} /> },
+    ],
+  },
+  {
+    label: 'Trade & Logistics',
+    items: [
+      { to: '/imports', label: 'Imports', icon: <Ship size={17} /> },
+      { to: '/exports', label: 'Exports', icon: <Send size={17} /> },
+      { to: '/inventory', label: 'Inventory', icon: <Boxes size={17} /> },
+      { to: '/stock-transfers', label: 'Stock Transfers', icon: <ArrowLeftRight size={17} /> },
+    ],
+  },
+  {
+    label: 'Currency Exchange',
+    items: [
+      { to: '/currency-exchange', label: 'Forex Desk', icon: <Coins size={17} /> },
+      { to: '/currency-reports', label: 'Forex Reports', icon: <FileBarChart size={17} /> },
     ],
   },
   {
@@ -54,6 +70,12 @@ const NAV: NavGroup[] = [
 const TITLES: Record<string, { title: string; eyebrow: string }> = {
   '/': { title: 'Executive Dashboard', eyebrow: 'Overview' },
   '/ai': { title: 'AI Command Center', eyebrow: 'AI Secretary' },
+  '/imports': { title: 'Import Management', eyebrow: 'Trade & Logistics' },
+  '/exports': { title: 'Export Management', eyebrow: 'Trade & Logistics' },
+  '/inventory': { title: 'Inventory Management', eyebrow: 'Trade & Logistics' },
+  '/stock-transfers': { title: 'Stock Transfers', eyebrow: 'Trade & Logistics' },
+  '/currency-exchange': { title: 'Foreign Currency Exchange', eyebrow: 'Currency Management' },
+  '/currency-reports': { title: 'Forex Reports & Realized P&L', eyebrow: 'Currency Management' },
   '/parties': { title: 'Parties', eyebrow: 'Accounting' },
   '/chart-of-accounts': { title: 'Chart of Accounts', eyebrow: 'Accounting' },
   '/transactions': { title: 'Transactions', eyebrow: 'Accounting' },

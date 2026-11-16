@@ -2,13 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, Send, Paperclip, ShieldCheck, Check, X, PencilLine, Info, Languages,
-  Trash2, ArrowRight, FileText, Clock, CircleDollarSign,
+  Trash2, ArrowRight, FileText, Clock, CircleDollarSign, Mic, Volume2,
 } from 'lucide-react';
 import { Page, Card, CardHead, StatusBadge, InfoCallout } from '../components/ui';
 import { useStore } from '../demo/store';
 import { runAiCommand, SUGGESTED_PROMPTS, type AiResult } from '../ai/engine';
 import { formatPKR, formatDateTime } from '../lib/format';
 import { partyBalance } from '../demo/accounting';
+import {
+  VoiceListeningBar,
+  VoiceResponseButton,
+  VoiceHeaderControls,
+} from '../components/VoiceControls';
+import {
+  VoiceRecognitionController,
+  isSpeechRecognitionSupported,
+} from '../voice/speechRecognition';
+import { voiceSynthesizer } from '../voice/speechSynthesis';
+import type { SpeechLanguage, VoiceRecognitionError, VoiceRecognitionState } from '../voice/types';
 
 interface ChatMessage {
   id: string;
@@ -25,7 +36,7 @@ const INITIAL: ChatMessage[] = [
     text:
       'Assalam-o-Alaikum! I am your AI Business Secretary for **ABC Trading Company**.\n' +
       'Ask me about sales, profit, cash position, any party ledger, or tell me to prepare a payment — I will draft it and wait for your approval.\n' +
-      'You can write in English or Roman Urdu.',
+      'You can write or speak in English, Roman Urdu, or Urdu.',
   },
 ];
 
@@ -59,6 +70,24 @@ export default function AiCommandCenter() {
   const [typing, setTyping] = useState(false);
   const [history, setHistory] = useState<{ q: string; at: string; intent: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Voice recognition & speech synthesis state
+  const [recState, setRecState] = useState<VoiceRecognitionState>('idle');
+  const [speechLang, setSpeechLang] = useState<SpeechLanguage>('ur-PK');
+  const [interimText, setInterimText] = useState('');
+  const [volume, setVolume] = useState(0.3);
+  const [recError, setRecError] = useState<VoiceRecognitionError | null>(null);
+  const [autoPlayVoice, setAutoPlayVoice] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('ai_secretary_voice_auto_play') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const recControllerRef = useRef<VoiceRecognitionController | null>(null);
 
   const pending = useMemo(() => data.approvals.filter((a) => a.status === 'pending' || a.status === 'draft'), [data.approvals]);
 
@@ -66,6 +95,77 @@ export default function AiCommandCenter() {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, typing, data.approvals.length]);
+
+  // Initialize Speech Recognition Controller
+  useEffect(() => {
+    const controller = new VoiceRecognitionController(
+      {
+        onStateChange: (st) => setRecState(st),
+        onInterimText: (txt) => setInterimText(txt),
+        onFinalText: (txt) => {
+          setInput((prev) => (prev ? `${prev} ${txt}`.trim() : txt.trim()));
+          setInterimText('');
+        },
+        onError: (err) => setRecError(err),
+        onVolumeChange: (vol) => setVolume(vol),
+      },
+      speechLang
+    );
+
+    recControllerRef.current = controller;
+
+    return () => {
+      controller.cancel();
+      voiceSynthesizer.stop();
+    };
+  }, [speechLang]);
+
+  const handleAutoPlayToggle = (val: boolean) => {
+    setAutoPlayVoice(val);
+    try {
+      localStorage.setItem('ai_secretary_voice_auto_play', val ? 'true' : 'false');
+    } catch {}
+  };
+
+  const toggleListening = async () => {
+    setRecError(null);
+    if (recState === 'listening' || recState === 'requesting') {
+      const text = recControllerRef.current?.stop() || '';
+      if (text) {
+        setInput((prev) => (prev ? `${prev} ${text}`.trim() : text.trim()));
+      }
+      setInterimText('');
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    } else {
+      if (!isSpeechRecognitionSupported()) {
+        setRecError({
+          type: 'not-supported',
+          message: 'Web Speech API is not available in this browser.',
+          remedy: 'Use Google Chrome, Microsoft Edge, or pick a suggested prompt below to test voice workflow.',
+        });
+        return;
+      }
+      const started = await recControllerRef.current?.start(speechLang);
+      if (!started) {
+        // error handled via onError callback
+      }
+    }
+  };
+
+  const handleVoiceDone = () => {
+    const text = recControllerRef.current?.stop() || '';
+    if (text) {
+      setInput((prev) => (prev ? `${prev} ${text}`.trim() : text.trim()));
+    }
+    setInterimText('');
+    setTimeout(() => textareaRef.current?.focus(), 50);
+  };
+
+  const handleVoiceCancel = () => {
+    recControllerRef.current?.cancel();
+    setInterimText('');
+    setRecError(null);
+  };
 
   const send = (raw: string) => {
     const text = raw.trim();
@@ -102,12 +202,21 @@ export default function AiCommandCenter() {
           tone: 'info',
         });
       }
+
+      const aiMsgId = `a-${Date.now()}`;
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: 'ai', text: result.text, result, approvalId },
+        { id: aiMsgId, role: 'ai', text: result.text, result, approvalId },
       ]);
       setHistory((prev) => [{ q: text, at: new Date().toISOString(), intent: result.intentLabel }, ...prev].slice(0, 8));
       setTyping(false);
+
+      // Auto-read response aloud if voice response is enabled
+      if (autoPlayVoice) {
+        voiceSynthesizer.speak(aiMsgId, result.text, {
+          preferredLanguage: result.language === 'roman-urdu' ? 'ur' : 'en',
+        });
+      }
     }, 520);
   };
 
@@ -135,6 +244,16 @@ export default function AiCommandCenter() {
             <div className="spacer" />
             <span className="badge green"><span className="dot" /> Ready</span>
           </div>
+
+          <VoiceHeaderControls
+            autoPlay={autoPlayVoice}
+            onAutoPlayToggle={handleAutoPlayToggle}
+            language={speechLang}
+            onLanguageChange={(lang) => {
+              setSpeechLang(lang);
+              recControllerRef.current?.setLanguage(lang);
+            }}
+          />
 
           <div className="chat-scroll" ref={scrollRef}>
             {messages.map((msg) => (
@@ -195,10 +314,13 @@ export default function AiCommandCenter() {
                     </div>
                   ) : null}
 
-                  {msg.role === 'ai' && msg.id !== 'welcome' ? (
-                    <div className="row wrap" style={{ gap: 8, marginTop: 9 }}>
-                      <span className="ai-sim-note"><Info size={11} /> Simulated response · rule-based engine · no AI API call</span>
+                  {msg.role === 'ai' ? (
+                    <div className="row wrap" style={{ gap: 8, marginTop: 9, alignItems: 'center' }}>
+                      {msg.id !== 'welcome' && (
+                        <span className="ai-sim-note"><Info size={11} /> Simulated response · rule-based engine · no AI API call</span>
+                      )}
                       {msg.result ? <span className="tag">intent: {msg.result.intent}</span> : null}
+                      <VoiceResponseButton messageId={msg.id} text={msg.text} language={msg.result?.language} />
                     </div>
                   ) : null}
                 </div>
@@ -216,6 +338,20 @@ export default function AiCommandCenter() {
           </div>
 
           <div className="chat-input-area">
+            <VoiceListeningBar
+              state={recState}
+              interimText={interimText}
+              language={speechLang}
+              volume={volume}
+              onDone={handleVoiceDone}
+              onCancel={handleVoiceCancel}
+              onLanguageChange={(lang) => {
+                setSpeechLang(lang);
+                recControllerRef.current?.setLanguage(lang);
+              }}
+              error={recError}
+            />
+
             <div className="chips mb-2">
               {SUGGESTED_PROMPTS.slice(0, 4).map((p) => (
                 <button key={p.text} className="chip" onClick={() => send(p.text)} title={p.sub}>
@@ -224,10 +360,24 @@ export default function AiCommandCenter() {
               ))}
             </div>
             <div className="chat-input-row">
+              <button
+                type="button"
+                className={`mic-btn ${recState === 'listening' ? 'listening' : ''}`}
+                onClick={toggleListening}
+                title={
+                  recState === 'listening'
+                    ? 'Listening… Click to stop and review text'
+                    : 'Click microphone to speak your command'
+                }
+                aria-label="Microphone voice command"
+              >
+                <Mic size={18} />
+              </button>
               <textarea
+                ref={textareaRef}
                 className="chat-input"
                 rows={1}
-                placeholder='Type a command… e.g. "Aaj ki total sales kitni hain?"'
+                placeholder='Type or speak a command… e.g. "Aaj ki total sales kitni hain?"'
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -245,10 +395,10 @@ export default function AiCommandCenter() {
               </button>
             </div>
             <div className="chat-meta">
-              <span className="row" style={{ gap: 4 }}><Languages size={12} /> English + Roman Urdu</span>
+              <span className="row" style={{ gap: 4 }}><Languages size={12} /> Urdu + Roman Urdu + English</span>
               <span>·</span>
-              <span>Enter to send · Shift+Enter for a new line</span>
-              <span className="spacer" />
+              <span className="row" style={{ gap: 4 }}><Mic size={12} /> Speak & review before send</span>
+              <span>·</span>
               <span>Financial actions always create an approval draft</span>
             </div>
           </div>
